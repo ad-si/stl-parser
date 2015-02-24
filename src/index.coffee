@@ -3,9 +3,9 @@ require 'string.prototype.includes'
 
 textEncoding = require 'text-encoding'
 
-Vector = require '../../../source/Vector'
-Polygon = require '../../../source/Polygon'
-converters = require '../../../source/converters'
+Vector = require './Vector'
+Polygon = require './Polygon'
+bufferConverter = require 'buffer-converter'
 errors = require './errors'
 parser = require './parser'
 
@@ -35,7 +35,7 @@ module.exports = (fileContent, options = {}) ->
 			# https://github.com/inexorabletash/text-encoding/issues/29
 			if Buffer
 				if Buffer.isBuffer fileContent
-					stlString = converters
+					stlString = bufferConverter
 					.toBuffer(fileContent)
 					.toString()
 				else
