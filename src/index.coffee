@@ -7,16 +7,17 @@ Vector = require './Vector'
 Polygon = require './Polygon'
 bufferConverter = require 'buffer-converter'
 errors = require './errors'
-parser = require './parser'
+AsciiParser = require './AsciiParser'
+BinaryParser = require './BinaryParser'
 
 
-containsKeywords = (stlString) ->
+containsKeywords = (stlString) =>
 	return stlString.startsWith('solid') and
 			stlString.includes('facet') and
 			stlString.includes ('vertex')
 
 
-module.exports = (fileContent, options = {}) ->
+module.exports = (fileContent, options = {}) =>
 
 	return new Promise (fulfill, reject) =>
 		if not fileContent
@@ -47,6 +48,15 @@ module.exports = (fileContent, options = {}) ->
 				.decode new Uint8Array fileContent
 
 			if containsKeywords stlString
-				return fulfill parser.ascii stlString
+
+				asciiParser = new AsciiParser stlString
+
+				asciiParser.on 'FacetWarning', (warning) =>
+					console.log(warning)
+
+				asciiParser.on 'end', (model) =>
+					fulfill model
+
+				asciiParser.parse()
 
 			fulfill parser.binary fileContent
