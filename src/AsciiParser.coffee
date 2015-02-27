@@ -15,24 +15,32 @@ class AsciiParser extends Transform
 		@options.readableObjectMode ?= true
 		super @options
 
+		@debugBuffer = ''
 		@internalBuffer = ''
 		@last = 'root'
 		@currentModel = null
 		@currentFace = null
 		@faceCounter = 0
+		@lineCounter = 1
+		@characterCounter = 0
 
 
 	getNextWord: () =>
-		words = @internalBuffer.match(/\S+/)
+		if /^\s*\n\s*/gi.test @internalBuffer then @lineCounter++
 
-		@internalBuffer = @internalBuffer.trim()
+		whitespace = @internalBuffer.match /^\s+/
+
+		if whitespace
+			@characterCounter += whitespace[0].length
+			@internalBuffer = @internalBuffer.substr whitespace[0].length
+
+		words = @internalBuffer.match /^\S+/
 
 		if (words is null) or (words[0].length is @internalBuffer.length)
 			return null
 		else
-			@internalBuffer = @internalBuffer
-				.trim()
-				.substr(words[0].length + 1)
+			@characterCounter += words[0].length
+			@internalBuffer = @internalBuffer.substr words[0].length
 			return words[0]
 
 
@@ -78,31 +86,35 @@ class AsciiParser extends Transform
 						z: null
 					}
 					@currentFace.vertices.push @currentVertex
-					@last = 'vertex'
 				else
-					throw new Error 'Unexpected "vertex" after ' + @last
+					throw new Error "Unexpected vertex after #{@last}
+								in face #{@faceCounter} in line #{@lineCounter}"
 
+				@last = 'vertex'
 				continue
+
 
 			if word is 'facet'
 				if @last is 'solid' or @last is 'name'
 					@push @currentModel
-					@last = 'facet'
-				else if @last is 'endfacet'
-					@last = 'facet'
-				else
-					throw new Error('Unexpected facet after ' + @last)
+				else if @last isnt 'endfacet'
+					throw new Error "Unexpected facet after #{@last}
+								in face #{@faceCounter} in line #{@lineCounter}"
+
+				@last = 'facet'
 				continue
+
 
 			if word is 'normal'
 				if @last is 'facet'
 					@currentFace = {
 						normal: {x: null, y: null, z: null}
 					}
-					@last = 'normal'
-					continue
 				else
 					throw new Error('Unexpected normal after ' + @last)
+
+				@last = 'normal'
+				continue
 
 			if @last is 'normal'
 				@currentFace.normal.x = Number word
@@ -124,45 +136,52 @@ class AsciiParser extends Transform
 					@last = 'outer'
 					continue
 				else
-					throw Error 'Unexpected "outer" after ' + @last
+					throw new Error "Unexpected outer after #{@last}
+								in face #{@faceCounter} in line #{@lineCounter}"
 
 			if word is 'loop'
-				if @last is 'outer'
-					@last = 'loop'
-					continue
-				else
-					throw Error 'Unexpected "loop" after ' + @last
+				if @last isnt 'outer'
+					throw new Error "Unexpected loop after #{@last}
+								in face #{@faceCounter} in line #{@lineCounter}"
+
+				@last = 'loop'
+				continue
 
 			if word is 'endloop'
-				if @last is 'vertex-z'
-					@last = 'endloop'
-					continue
-				else
-					throw Error 'Unexpected "endloop" after ' + @last
+				if @last isnt 'vertex-z'
+					throw new Error "Unexpected endloop after #{@last}
+								in face #{@faceCounter} in line #{@lineCounter}"
+
+				@last = 'endloop'
+				continue
 
 			if word is 'endfacet'
 				if @last is 'endloop'
 					@push @currentFace
-					@last = 'endfacet'
-					continue
 				else
-					throw Error 'Unexpected "endfacet" after ' + @last
+					@emit 'error', new Error "Unexpected endfacet after #{@last}
+								in face #{@faceCounter} in line #{@lineCounter}"
+				@last = 'endfacet'
+				continue
 
 			if word is 'endsolid'
 				if @last is 'endfacet'
-					@last = 'endsolid'
 					@push null
-					continue
 				else
-					throw Error 'Unexpected "endsolid" after ' + @last
+					throw new Error "Unexpected endsolid after #{@last}
+								in face #{@faceCounter} in line #{@lineCounter}"
+
+				@last = 'endsolid'
+				continue
 
 			if word is 'solid'
 				if @last is 'root'
 					@currentModel = {name: null}
-					@last = 'solid'
-					continue
 				else
-					throw new Error 'Unexpected "solid" after ' + @last
+					throw new Error "Unexpected solid after #{@last}
+								in face #{@faceCounter} in line #{@lineCounter}"
+				@last = 'solid'
+				continue
 
 			if @last is 'solid'
 				@currentModel.name = word

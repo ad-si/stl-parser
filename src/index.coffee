@@ -48,9 +48,9 @@ class StlParser extends Transform
 		if @firstCall
 			@firstCall = false
 			if chunk.toString().startsWith('solid') or @options.type is 'ascii'
-				@parser = new AsciiParser @options
+				@parser = new AsciiParser
 			else
-				@parser = new BinaryParser @options
+				@parser = new BinaryParser
 
 			@parser.on 'data', (data) =>
 				if @options.readableObjectMode
@@ -59,12 +59,15 @@ class StlParser extends Transform
 					@push JSON.stringify data
 					@push '\n'
 
-
 			@parser.on 'end', () =>
 				@push null
 
-		@parser.write chunk, () =>
+			@parser.on 'error', (error) =>
+				throw error
+
+		@parser.write chunk, () ->
 			done()
+
 
 
 module.exports = (fileContent, options) ->
