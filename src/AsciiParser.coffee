@@ -10,9 +10,10 @@ Transform = stream.Transform
 
 
 class AsciiParser extends Transform
-	constructor: (options = {}) ->
-		options.objectMode ?= true
-		super options
+	constructor: (@options = {}) ->
+		@options.writableObjectMode ?= false
+		@options.readableObjectMode ?= true
+		super @options
 
 		@internalBuffer = ''
 		@last = 'root'

@@ -35,7 +35,8 @@ class GenericStream extends Readable
 class StlParser extends Transform
 	constructor: (@options = {}) ->
 		@firstCall = true
-		@options.readableObjectMode = true
+		@options.writableObjectMode ?= false
+		@options.readableObjectMode ?= true
 		super @options
 
 	_flush: (done) ->
@@ -44,19 +45,20 @@ class StlParser extends Transform
 
 	_transform: (chunk, encoding, done) ->
 
-		chunk = chunk.toString()
-
-
 		if @firstCall
 			@firstCall = false
-			if chunk.startsWith('solid') or @options.type is 'ascii'
-				@parser = new AsciiParser
+			if chunk.toString().startsWith('solid') or @options.type is 'ascii'
+				@parser = new AsciiParser @options
 			else
-				@parser = new BinaryParser
+				@parser = new BinaryParser @options
 
 			@parser.on 'data', (data) =>
-				@push JSON.stringify data
-				@push '\n'
+				if @options.readableObjectMode
+					@push data
+				else
+					@push JSON.stringify data
+					@push '\n'
+
 
 			@parser.on 'end', () =>
 				@push null

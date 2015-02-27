@@ -1,6 +1,7 @@
 fs = require 'fs'
 path = require 'path'
 chai = require 'chai'
+stream = require 'stream'
 
 stlImporter = require '../src/index'
 
@@ -33,8 +34,41 @@ modelsMap = models.reduce (previous, current, index) ->
 , {}
 
 
+class StreamTester extends stream.Writable
+	constructor: (@data, @options = {}) ->
+		@firstCall = true
+		@options.objectMode = true
+		super @options
+
+	_write: (chunk, encoding, done) ->
+		if @firstCall
+			expect(chunk)
+				.to.be.an('object')
+				.and.to.have.ownProperty('name')
+			@firstCall = false
+		else
+			expect(chunk)
+				.to.be.a('object')
+				.and.to.contain.all.keys(['vertices', 'normal'])
+		done()
+
+
 describe 'STL Importer', ->
-	it 'should return an array of faces', ->
+	it 'transforms a stl-stream to an jsonl stream', (done) ->
+
+		asciiStlStream = fs.createReadStream(
+			modelsMap['polytopes/tetrahedron'].asciiPath
+		)
+		streamTester = new StreamTester()
+
+		asciiStlStream
+			.pipe stlImporter()
+			.pipe streamTester
+
+		streamTester.on 'finish', -> done()
+
+
+	it.skip 'should return an array of faces', ->
 		asciiStl = fs.readFileSync modelsMap['polytopes/tetrahedron'].asciiPath
 
 		return expect(stlImporter asciiStl).to.eventually
