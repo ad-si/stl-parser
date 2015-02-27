@@ -1,17 +1,21 @@
 util = require 'util'
-EventEmitter = require('events').EventEmitter
+stream = require('stream')
 
 Ascii = require './Ascii'
 Binary = require './Binary'
 Polygon = require './Polygon'
 Vector = require './Vector'
 
+Transform = stream.Transform
 
-class BinaryParser extends EventEmitter
-	constructor: (@stlBuffer) ->
-		@stl = new Binary()
 
-	parse: () ->
+class BinaryParser extends Transform
+	constructor: (options = {}) ->
+		options.writableObjectMode ?= true
+		super options
+
+	_transform: () ->
+		# TODO: Enable streaming functionality
 		reader = new DataView @stlBuffer, 80
 		numTriangles = reader.getUint32 0, true
 

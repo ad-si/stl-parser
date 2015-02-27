@@ -1,14 +1,20 @@
 require 'string.prototype.startswith'
 require 'string.prototype.includes'
 
+stream = require 'stream'
+util = require 'util'
+
 textEncoding = require 'text-encoding'
+bufferConverter = require 'buffer-converter'
 
 Vector = require './Vector'
 Polygon = require './Polygon'
-bufferConverter = require 'buffer-converter'
 errors = require './errors'
 AsciiParser = require './AsciiParser'
 BinaryParser = require './BinaryParser'
+
+Transform = stream.Transform
+Readable = stream.Readable
 
 
 containsKeywords = (stlString) =>
@@ -17,46 +23,86 @@ containsKeywords = (stlString) =>
 			stlString.includes ('vertex')
 
 
-module.exports = (fileContent, options = {}) =>
+class GenericStream extends Readable
+	constructor: (@data, @options = {}) ->
+		super @options
 
-	return new Promise (fulfill, reject) =>
-		if not fileContent
-			return reject new Error 'No file-content was passed!'
+	_read: () ->
+		@push @data
+		@push null
 
-		if options.type is 'ascii' or typeof fileContent is 'string'
-			if containsKeywords fileContent
-				return fulfill parser.ascii fileContent
+
+class StlParser extends Transform
+	constructor: (@options = {}) ->
+		@firstCall = true
+		@options.readableObjectMode = true
+		super @options
+
+	_flush: (done) ->
+		@parser.end()
+		done()
+
+	_transform: (chunk, encoding, done) ->
+
+		chunk = chunk.toString()
+
+
+		if @firstCall
+			@firstCall = false
+			if chunk.startsWith('solid') or @options.type is 'ascii'
+				@parser = new AsciiParser
 			else
-				return reject new Error 'STL string does not contain all stl-keywords!'
+				@parser = new BinaryParser
+
+			@parser.on 'data', (data) =>
+				@push JSON.stringify data
+				@push '\n'
+
+			@parser.on 'end', () =>
+				@push null
+
+		@parser.write chunk, () =>
+			done()
+
+
+module.exports = (fileContent, options) ->
+
+	if typeof fileContent is 'undefined' or
+		(typeof fileContent is 'object' and not Buffer.isBuffer(fileContent))
+			# fileContent contains options object
+			return new StlParser fileContent
+
+	if options.type is 'ascii' or typeof fileContent is 'string'
+		if containsKeywords fileContent
+			return new GenericStream(fileContent).pipe(
+				new StlParser({type: 'ascii'})
+			)
 		else
-			if options.type is 'binary'
-				return fulfill parser.binary fileContent
+			throw new Error 'STL string does not contain all stl-keywords!'
 
-			# TODO: Remove if branch when textEncoding is fixed under node 0.12
-			# https://github.com/inexorabletash/text-encoding/issues/29
-			if Buffer
-				if Buffer.isBuffer fileContent
-					stlString = bufferConverter
-					.toBuffer(fileContent)
-					.toString()
-				else
-					throw new Error "#{typeof fileContent} is no
-						supported data-format!"
+	else
+		if options.type is 'binary'
+			return new GenericStream(fileContent)
+				.pipe new StlParser({type: 'binary'})
+
+		# TODO: Remove if branch when textEncoding is fixed under node 0.12
+		# https://github.com/inexorabletash/text-encoding/issues/29
+		if Buffer
+			if Buffer.isBuffer fileContent
+				stlString = bufferConverter
+				.toBuffer(fileContent)
+				.toString()
 			else
-				stlString = textEncoding
-				.TextDecoder 'utf-8'
-				.decode new Uint8Array fileContent
+				throw new Error "#{typeof fileContent} is no
+						supported data-format!"
+		else
+			stlString = textEncoding
+			.TextDecoder 'utf-8'
+			.decode new Uint8Array fileContent
 
-			if containsKeywords stlString
+		if containsKeywords stlString
+			return new GenericStream(stlString)
+				.pipe new StlParser({type: 'ascii'})
 
-				asciiParser = new AsciiParser stlString
-
-				asciiParser.on 'FacetWarning', (warning) =>
-					console.log(warning)
-
-				asciiParser.on 'end', (model) =>
-					fulfill model
-
-				asciiParser.parse()
-
-			fulfill parser.binary fileContent
+		new GenericStream(fileContent)
+			.pipe new StlParser({type: 'binary'})
