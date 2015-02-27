@@ -4,6 +4,7 @@ chai = require 'chai'
 stream = require 'stream'
 
 stlImporter = require '../src/index'
+AsciiParser = require '../src/AsciiParser'
 
 chai.use require 'chai-as-promised'
 expect = chai.expect
@@ -53,8 +54,40 @@ class StreamTester extends stream.Writable
 		done()
 
 
+
+describe 'AsciiParser', ->
+	it 'Gets next word from internal buffer', () ->
+
+		asciiParser = new AsciiParser
+		asciiParser.internalBuffer = 'this is a test string'
+
+		expect(asciiParser.getNextWord()).to.equal 'this'
+
+
+	it 'Counts newlines surrounded by whitespace', () ->
+
+		asciiParser = new AsciiParser
+		asciiParser.internalBuffer = 'this is \n a test \n string'
+
+		while asciiParser.getNextWord()
+			### empty body ###
+
+		expect(asciiParser.lineCounter).to.equal(3)
+
+
+	it 'Counts newlines surrounded by words', () ->
+
+		asciiParser = new AsciiParser
+		asciiParser.internalBuffer = 'this is\na test\nstring'
+
+		while asciiParser.getNextWord()
+			### empty body ###
+
+		expect(asciiParser.lineCounter).to.equal(3)
+
+
 describe 'STL Importer', ->
-	it 'transforms a stl-stream to an jsonl stream', (done) ->
+	it 'Transforms a stl-stream to an jsonl stream', (done) ->
 
 		asciiStlStream = fs.createReadStream(
 			modelsMap['polytopes/tetrahedron'].asciiPath
