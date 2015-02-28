@@ -10,6 +10,7 @@ chai.use require 'chai-as-promised'
 expect = chai.expect
 
 models = [
+	'multiWordName'
 	'polytopes/triangle'
 	'polytopes/tetrahedron'
 	'polytopes/cube'
@@ -36,21 +37,26 @@ modelsMap = models.reduce (previous, current, index) ->
 
 
 class StreamTester extends stream.Writable
-	constructor: (@data, @options = {}) ->
+	constructor: (@options = {}) ->
 		@firstCall = true
 		@options.objectMode = true
 		super @options
 
 	_write: (chunk, encoding, done) ->
-		if @firstCall
-			expect(chunk)
-				.to.be.an('object')
-				.and.to.have.ownProperty('name')
-			@firstCall = false
+
+		if @options.test
+			@options.test(chunk)
+
 		else
-			expect(chunk)
-				.to.be.a('object')
-				.and.to.contain.all.keys(['vertices', 'normal'])
+			if @firstCall
+				expect(chunk)
+					.to.be.an('object')
+					.and.to.have.ownProperty('name')
+				@firstCall = false
+			else
+				expect(chunk)
+					.to.be.a('object')
+					.and.to.contain.all.keys(['vertices', 'normal'])
 		done()
 
 
@@ -93,6 +99,22 @@ describe 'STL Importer', ->
 			modelsMap['polytopes/tetrahedron'].asciiPath
 		)
 		streamTester = new StreamTester()
+
+		asciiStlStream
+			.pipe stlImporter()
+			.pipe streamTester
+
+		streamTester.on 'finish', -> done()
+
+
+	it 'Handles STL-files with multi-word names', ->
+		asciiStlStream = fs.createReadStream(
+			modelsMap['multiWordName'].asciiPath
+		)
+		streamTester = new StreamTester {
+			test: (chunk) ->
+				expect(chunk?.name).to.equal 'Model with a multi word name'
+		}
 
 		asciiStlStream
 			.pipe stlImporter()

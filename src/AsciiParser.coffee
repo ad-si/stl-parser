@@ -183,9 +183,15 @@ class AsciiParser extends Transform
 				@last = 'solid'
 				continue
 
+			if @last is 'name'
+				@currentModel.name += ' ' + word
+				@last = 'name'
+				continue
+
 			if @last is 'solid'
 				@currentModel.name = word
 				@last = 'name'
+				continue
 
 		done()
 
