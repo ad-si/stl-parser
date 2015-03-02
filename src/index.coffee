@@ -48,9 +48,9 @@ class StlParser extends Transform
 		if @firstCall
 			@firstCall = false
 			if chunk.toString().startsWith('solid') or @options.type is 'ascii'
-				@parser = new AsciiParser
+				@parser = new AsciiParser {format: @options.format}
 			else
-				@parser = new BinaryParser
+				@parser = new BinaryParser {format: @options.format}
 
 			@parser.on 'data', (data) =>
 				if @options.readableObjectMode
@@ -77,16 +77,15 @@ module.exports = (fileContent, options) ->
 			# fileContent contains options object
 			return new StlParser fileContent
 
-	if options.type is 'ascii' or typeof fileContent is 'string'
+	if options?.type is 'ascii' or typeof fileContent is 'string'
 		if containsKeywords fileContent
-			return new GenericStream(fileContent).pipe(
-				new StlParser({type: 'ascii'})
-			)
+			return new GenericStream(fileContent)
+				.pipe new StlParser {type: 'ascii', format: 'json'}
 		else
 			throw new Error 'STL string does not contain all stl-keywords!'
 
 	else
-		if options.type is 'binary'
+		if options?.type is 'binary'
 			return new GenericStream(fileContent)
 				.pipe new StlParser({type: 'binary'})
 
@@ -107,7 +106,7 @@ module.exports = (fileContent, options) ->
 
 		if containsKeywords stlString
 			return new GenericStream(stlString)
-				.pipe new StlParser({type: 'ascii'})
+				.pipe new StlParser {type: 'ascii', format: 'json'}
 
 		new GenericStream(fileContent)
 			.pipe new StlParser({type: 'binary'})

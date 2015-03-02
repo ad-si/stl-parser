@@ -13,6 +13,8 @@ class AsciiParser extends Transform
 	constructor: (@options = {}) ->
 		@options.writableObjectMode ?= false
 		@options.readableObjectMode ?= true
+		@options.format ?= 'jsonl'
+
 		super @options
 
 		@debugBuffer = ''
@@ -96,7 +98,8 @@ class AsciiParser extends Transform
 
 			if word is 'facet'
 				if @last is 'solid' or @last is 'name'
-					@push @currentModel
+					if @options.format isnt 'json'
+						@push @currentModel
 				else if @last isnt 'endfacet'
 					throw new Error "Unexpected facet after #{@last}
 								in face #{@faceCounter} in line #{@lineCounter}"
@@ -157,7 +160,10 @@ class AsciiParser extends Transform
 
 			if word is 'endfacet'
 				if @last is 'endloop'
-					@push @currentFace
+					if @options.format is 'json'
+						@currentModel.faces.push @currentFace
+					else
+						@push @currentFace
 				else
 					@emit 'error', new Error "Unexpected endfacet after #{@last}
 								in face #{@faceCounter} in line #{@lineCounter}"
@@ -166,6 +172,8 @@ class AsciiParser extends Transform
 
 			if word is 'endsolid'
 				if @last is 'endfacet'
+					if @options.format is 'json'
+						@push @currentModel
 					@push null
 				else
 					throw new Error "Unexpected endsolid after #{@last}
@@ -177,6 +185,8 @@ class AsciiParser extends Transform
 			if word is 'solid'
 				if @last is 'root'
 					@currentModel = {name: null}
+					if @options.format is 'json'
+						@currentModel.faces = []
 				else
 					throw new Error "Unexpected solid after #{@last}
 								in face #{@faceCounter} in line #{@lineCounter}"
