@@ -160,15 +160,21 @@ class AsciiParser extends Transform
 					throw new Error "Unexpected endloop after #{@last}
 								in face #{@faceCounter} in line #{@lineCounter}"
 
+				else if @currentFace.vertices.length <= 2
+					@emit 'warning', "Face #{@faceCounter} has
+						#{@currentFace.vertices.length} instead of 3 vertices"
+					@currentFace = null
+
 				@last = 'endloop'
 				continue
 
 			if word is 'endfacet'
 				if @last is 'endloop'
-					if @options.format is 'json'
-						@currentModel.faces.push @currentFace
-					else
-						@push @currentFace
+					if @currentFace
+						if @options.format is 'json'
+							@currentModel.faces.push @currentFace
+						else
+							@push @currentFace
 				else
 					@emit 'error', new Error "Unexpected endfacet after #{@last}
 								in face #{@faceCounter} in line #{@lineCounter}"
