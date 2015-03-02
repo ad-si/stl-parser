@@ -127,11 +127,13 @@ describe 'STL Importer', ->
 		streamTester.on 'finish', -> done()
 
 
-	it.skip 'should return an array of faces', ->
+	it 'should return an array of faces', (done) ->
 		asciiStl = fs.readFileSync modelsMap['polytopes/tetrahedron'].asciiPath
 
-		return expect(stlImporter asciiStl).to.eventually
-			.have.property('faces').that.is.an('array')
+		stlImporter asciiStl
+			.on 'data', (data) ->
+				expect(data).to.be.a.triangleMesh
+				done()
 
 
 	it.skip 'should fix faces with 4 or more vertices', ->
