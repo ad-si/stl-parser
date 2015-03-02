@@ -1,5 +1,6 @@
 fs = require 'fs'
 path = require 'path'
+util = require 'util'
 chai = require 'chai'
 stream = require 'stream'
 
@@ -127,7 +128,7 @@ describe 'STL Importer', ->
 		streamTester.on 'finish', -> done()
 
 
-	it 'should return an array of faces', (done) ->
+	it 'Returns an array of faces', (done) ->
 		asciiStl = fs.readFileSync modelsMap['polytopes/tetrahedron'].asciiPath
 
 		stlImporter asciiStl
@@ -136,13 +137,16 @@ describe 'STL Importer', ->
 				done()
 
 
-	it.skip 'should fix faces with 4 or more vertices', ->
+	it 'Fixes faces with 4 or more vertices and emits a warning', (done) ->
 		asciiStl = fs.readFileSync modelsMap['broken/fourVertices'].asciiPath
 
-		promise = stlImporter asciiStl
-			.catch (error) -> console.error error
+		stlImporter asciiStl
+			.on 'warning', (warning) ->
+				expect(warning).to.equal('Face 1 has 4 instead of 3 vertices')
 
-		return expect(promise).to.eventually.be.a.triangleMesh
+			.on 'data', (data) ->
+				expect(data).to.be.a.triangleMesh
+				done()
 
 
 	it.skip 'should fix faces with 2 or less vertices', ->
