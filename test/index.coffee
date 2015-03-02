@@ -47,6 +47,10 @@ class StreamTester extends stream.Writable
 		if @options.test
 			@options.test(chunk)
 
+		if @options.testFirst and @firstCall is true
+			@options.testFirst(chunk)
+			@firstCall = false
+
 		else
 			if @firstCall
 				expect(chunk)
@@ -107,12 +111,12 @@ describe 'STL Importer', ->
 		streamTester.on 'finish', -> done()
 
 
-	it 'Handles STL-files with multi-word names', ->
+	it 'Handles STL-files with multi-word names', (done) ->
 		asciiStlStream = fs.createReadStream(
 			modelsMap['multiWordName'].asciiPath
 		)
 		streamTester = new StreamTester {
-			test: (chunk) ->
+			testFirst: (chunk) ->
 				expect(chunk?.name).to.equal 'Model with a multi word name'
 		}
 
