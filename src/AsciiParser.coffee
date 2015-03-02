@@ -22,6 +22,7 @@ class AsciiParser extends Transform
 		@last = 'root'
 		@currentModel = null
 		@currentFace = null
+
 		@faceCounter = 0
 		@lineCounter = 1
 		@characterCounter = 0
@@ -82,12 +83,16 @@ class AsciiParser extends Transform
 					@currentFace.number = ++@faceCounter
 
 				if @last is 'vertex-z' or @last is 'loop'
-					@currentVertex = {
-						x: null,
-						y: null,
-						z: null
-					}
-					@currentFace.vertices.push @currentVertex
+					if @currentFace.vertices.length >= 3
+						@emit 'warning', "Face #{@faceCounter} has 4
+								instead of 3 vertices"
+					else
+						@currentVertex = {
+							x: null,
+							y: null,
+							z: null
+						}
+						@currentFace.vertices.push @currentVertex
 				else
 					throw new Error "Unexpected vertex after #{@last}
 								in face #{@faceCounter} in line #{@lineCounter}"

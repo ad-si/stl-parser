@@ -65,6 +65,9 @@ class StlParser extends Transform
 			@parser.on 'error', (error) =>
 				throw error
 
+			@parser.on 'warning', (warning) =>
+				@emit 'warning', warning
+
 		@parser.write chunk, () ->
 			done()
 
