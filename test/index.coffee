@@ -149,14 +149,16 @@ describe 'STL Importer', ->
 				done()
 
 
-	it.skip 'should fix faces with 2 or less vertices', ->
+	it 'Fixes faces with 2 or less vertices and emits a warning', (done) ->
 		asciiStl = fs.readFileSync modelsMap['broken/twoVertices'].asciiPath
 
-		modelPromise = meshlib asciiStl, {format: 'stl'}
-			.fixFaces()
-			.done (model) -> model
+		stlImporter asciiStl
+			.on 'warning', (warning) ->
+				expect(warning).to.equal('Face 1 has 2 instead of 3 vertices')
 
-		return expect(modelPromise).to.eventually.be.a.triangleMesh
+			.on 'data', (data) ->
+				expect(data).to.be.a.triangleMesh
+				done()
 
 
 	it.skip 'ascii & binary version should have equal faces', () ->
