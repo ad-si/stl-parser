@@ -1,57 +1,104 @@
 util = require 'util'
-stream = require('stream')
+stream = require 'stream'
+
+bufferTrim = require 'buffertrim'
 
 Ascii = require './Ascii'
 Binary = require './Binary'
 Polygon = require './Polygon'
 Vector = require './Vector'
 
-Transform = stream.Transform
+
+class BinaryParser extends stream.Transform
+	constructor: (@options = {}) ->
+		@options.writableObjectMode ?= false
+		@options.readableObjectMode ?= true
+		super @options
+
+		@internalBuffer = new Buffer(0)
+		@header = ''
+		@facesCounter = 0
+		@countedFaces = 0
+		@cursor = 80
+		@currentModel = {}
+		@currentFace = {}
+
+		@headerByteCount = 80        # 80 * UInt8
+		@vertexByteCount = 12         # 3 * Float
+		@attributeByteCount = 2      # 1 * UInt16
+		@facesCounterByteCount = 4   # 1 x UInt32
+		@faceByteCount = 50          # 4 * vertexByteCount + attributeByteCount
+		@facesOffset = @headerByteCount + @facesCounterByteCount
+		@coordinateByteCount = 4
 
 
-class BinaryParser extends Transform
-	constructor: (options = {}) ->
-		options.writableObjectMode ?= true
-		super options
+	_flush: (done) =>
+		done null, @internalBuffer
 
-	_transform: () ->
-		# TODO: Enable streaming functionality
-		reader = new DataView @stlBuffer, 80
-		numTriangles = reader.getUint32 0, true
 
-		#check if file size matches with numTriangles
-		dataLength = @stlBuffer.byteLength - 80 - 4
-		polyLength = 50
-		calcDataLength = polyLength * numTriangles
+	_transform: (chunk, encoding, done) ->
 
-		if calcDataLength > dataLength
-			throw new FileError null, calcDataLength, dataLength
+		@internalBuffer = Buffer.concat [@internalBuffer, chunk]
 
-		binaryIndex = 4
-		while (binaryIndex - 4) + polyLength <= dataLength
-			poly = new Polygon()
-			nx = reader.getFloat32 binaryIndex, true
-			binaryIndex += 4
-			ny = reader.getFloat32 binaryIndex, true
-			binaryIndex += 4
-			nz = reader.getFloat32 binaryIndex, true
-			binaryIndex += 4
-			poly.setNormal new Vector(nx, ny, nz)
+		while @cursor <= @internalBuffer.length
 
-			for i in [0..2]
-				vx = reader.getFloat32 binaryIndex, true
-				binaryIndex += 4
-				vy = reader.getFloat32 binaryIndex, true
-				binaryIndex += 4
-				vz = reader.getFloat32 binaryIndex, true
-				binaryIndex += 4
-				poly.addVertex new Vector(vx, vy, vz)
+			if @cursor is @headerByteCount
+				@header = bufferTrim.trimEnd(
+					@internalBuffer.slice(0, @headerByteCount)
+				).toString()
+				@currentModel.name = @header
+				@push @currentModel
+				@cursor += @facesCounterByteCount
+				continue
 
-			# Skip uint 16
-			binaryIndex += 2
-			@stl.addPolygon poly
+			if @cursor is @facesOffset
+				@facesCounter = @internalBuffer.readUInt32LE @headerByteCount
+				# TODO: Add warning for wrong number
+				@cursor += @faceByteCount
+				continue
 
-		return @stl
+			if @cursor = (@facesOffset + (@countedFaces + 1) * @faceByteCount)
+				@cursor -= @faceByteCount
+				@currentFace.normal = {
+					x: @internalBuffer.readFloatLE(
+						@cursor
+					)
+					y: @internalBuffer.readFloatLE(
+						@cursor += @coordinateByteCount
+					)
+					z: @internalBuffer.readFloatLE(
+						@cursor += @coordinateByteCount
+					)
+				}
+
+
+
+				@currentFace.vertices = []
+
+				for i in [0..2]
+					@currentFace.vertices.push {
+						x: @internalBuffer.readFloatLE(
+							@cursor += @coordinateByteCount
+						)
+						y: @internalBuffer.readFloatLE(
+							@cursor += @coordinateByteCount
+						)
+						z: @internalBuffer.readFloatLE(
+							@cursor += @coordinateByteCount
+						)
+					}
+
+				@currentFace.attribute = @internalBuffer
+					.readUInt16LE @cursor += @coordinateByteCount
+
+				@cursor += @attributeByteCount
+
+				@push @currentFace
+
+				@cursor += @faceByteCount
+				@countedFaces++
+
+		done()
 
 
 module.exports = BinaryParser
