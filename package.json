@@ -9,9 +9,10 @@
     "chai-as-promised": "^4.2.0",
     "mocha": "^2.1.0",
     "buffer-converter": "Lowfab/buffer-converter#0.1.0",
-    "stl-models": "Lowfab/stl-models#v0.2.0"
+    "stl-models": "Lowfab/stl-models#v0.3.0"
   },
   "dependencies": {
+    "buffertrim": "^1.0.0",
     "coffee-script": "^1.9.0",
     "string.prototype.includes": "^1.0.0",
     "string.prototype.startswith": "^0.2.0",
