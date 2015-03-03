@@ -98,18 +98,29 @@ describe 'AsciiParser', ->
 
 
 describe 'STL Importer', ->
-	it 'Transforms a stl-stream to an jsonl stream', (done) ->
 
-		asciiStlStream = fs.createReadStream(
-			modelsMap['polytopes/tetrahedron'].asciiPath
-		)
-		streamTester = new StreamTester()
+	it 'Transforms ascii stl-stream to jsonl stream', (done) ->
 
+		model = modelsMap['polytopes/tetrahedron']
+		asciiStlStream = fs.createReadStream model.asciiPath
+
+		asciiStreamTester = new StreamTester()
+		asciiStreamTester.on 'finish', -> done()
 		asciiStlStream
 			.pipe stlImporter()
-			.pipe streamTester
+			.pipe asciiStreamTester
 
-		streamTester.on 'finish', -> done()
+
+	it 'Transforms binary stl-stream to jsonl stream', (done) ->
+
+		model = modelsMap['polytopes/tetrahedron']
+		binaryStlStream = fs.createReadStream model.binaryPath
+
+		binaryStreamTester = new StreamTester()
+		binaryStreamTester.on 'finish', -> done()
+		binaryStlStream
+			.pipe stlImporter()
+			.pipe binaryStreamTester
 
 
 	it 'Handles STL-files with multi-word names', (done) ->
