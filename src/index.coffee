@@ -82,22 +82,22 @@ module.exports = (fileContent, options) ->
 
 	if options?.type is 'ascii' or typeof fileContent is 'string'
 		if containsKeywords fileContent
-			return new GenericStream(fileContent)
+			return new GenericStream fileContent
 				.pipe new StlParser {type: 'ascii', format: 'json'}
 		else
 			throw new Error 'STL string does not contain all stl-keywords!'
 
 	else
 		if options?.type is 'binary'
-			return new GenericStream(fileContent)
-				.pipe new StlParser({type: 'binary'})
+			return new GenericStream fileContent
+				.pipe new StlParser {type: 'binary'}
 
 		# TODO: Remove if branch when textEncoding is fixed under node 0.12
 		# https://github.com/inexorabletash/text-encoding/issues/29
 		if Buffer
 			if Buffer.isBuffer fileContent
 				stlString = bufferConverter
-				.toBuffer(fileContent)
+				.toBuffer fileContent
 				.toString()
 			else
 				throw new Error "#{typeof fileContent} is no
@@ -108,8 +108,8 @@ module.exports = (fileContent, options) ->
 			.decode new Uint8Array fileContent
 
 		if containsKeywords stlString
-			return new GenericStream(stlString)
+			return new GenericStream stlString
 				.pipe new StlParser {type: 'ascii', format: 'json'}
 
-		new GenericStream(fileContent)
-			.pipe new StlParser({type: 'binary'})
+		new GenericStream fileContent
+			.pipe new StlParser {type: 'binary'}
