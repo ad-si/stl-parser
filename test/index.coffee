@@ -15,9 +15,12 @@ models = [
 	'polytopes/triangle'
 	'polytopes/tetrahedron'
 	'polytopes/cube'
+
 	'broken/fourVertices'
 	'broken/twoVertices'
 	'broken/wrongNormals'
+	'broken/incorrectFaceCounter'
+
 	'objects/gearwheel'
 	'objects/bunny'
 ].map (model) ->
@@ -97,6 +100,26 @@ describe 'AsciiParser', ->
 		expect(asciiParser.lineCounter).to.equal(3)
 
 
+describe 'BinaryParser', ->
+
+	it 'Emits a warning if faceCounter and
+	  number of faces do not match', (done) ->
+
+		model = modelsMap['broken/incorrectFaceCounter']
+		binaryStl = fs.readFileSync model.binaryPath
+
+		stlImporter binaryStl
+			.on 'warning', (warning) ->
+				expect(warning).to.equal(
+					'Number of specified faces (66) and
+					counted number of faces (4) do not match'
+				)
+			.on 'data', (data) ->
+				done()
+
+
+
+
 describe 'STL Importer', ->
 
 	it 'Transforms ascii stl-stream to jsonl stream', (done) ->
@@ -173,6 +196,9 @@ describe 'STL Importer', ->
 
 
 	it 'Ascii & binary stl have equal faces (maximum delta: 0.00001)', (done) ->
+
+		@timeout '3s'
+
 		asciiStl = fs.readFileSync modelsMap['objects/gearwheel'].asciiPath
 		binaryStl = fs.readFileSync modelsMap['objects/gearwheel'].binaryPath
 
