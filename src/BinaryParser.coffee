@@ -24,16 +24,20 @@ class BinaryParser extends stream.Transform
 		@currentModel = {}
 		@currentFace = {}
 
-		@headerByteCount = 80        # 80 * UInt8
-		@vertexByteCount = 12         # 3 * Float
-		@attributeByteCount = 2      # 1 * UInt16
-		@facesCounterByteCount = 4   # 1 x UInt32
-		@faceByteCount = 50          # 4 * vertexByteCount + attributeByteCount
+		@headerByteCount = 80       # 80 * UInt8
+		@vertexByteCount = 12       # 3 * Float
+		@attributeByteCount = 2     # 1 * UInt16
+		@facesCounterByteCount = 4  # 1 x UInt32
+		@faceByteCount = 50         # 4 * vertexByteCount + attributeByteCount
 		@facesOffset = @headerByteCount + @facesCounterByteCount
-		@coordinateByteCount = 4
+		@coordinateByteCount = 4    # 1 * Float
 
 
 	_flush: (done) =>
+		if @facesCounter isnt @countedFaces
+			@emit 'warning', "Number of specified faces (#{@facesCounter}) and
+                counted number of faces (#{@countedFaces}) do not match"
+
 		if @options.format is 'json'
 			@push @currentModel
 			done null, @internalBuffer
@@ -42,7 +46,6 @@ class BinaryParser extends stream.Transform
 
 
 	_transform: (chunk, encoding, done) ->
-
 		@internalBuffer = Buffer.concat [@internalBuffer, chunk]
 
 		while @cursor <= @internalBuffer.length
@@ -63,7 +66,6 @@ class BinaryParser extends stream.Transform
 
 			if @cursor is @facesOffset
 				@facesCounter = @internalBuffer.readUInt32LE @headerByteCount
-				# TODO: Add warning for wrong number
 				@cursor += @faceByteCount
 				continue
 
