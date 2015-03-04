@@ -59,19 +59,19 @@ class BinaryParser extends stream.Transform
 
 			if @cursor = (@facesOffset + (@countedFaces + 1) * @faceByteCount)
 				@cursor -= @faceByteCount
-				@currentFace.normal = {
-					x: @internalBuffer.readFloatLE(
-						@cursor
-					)
-					y: @internalBuffer.readFloatLE(
-						@cursor += @coordinateByteCount
-					)
-					z: @internalBuffer.readFloatLE(
-						@cursor += @coordinateByteCount
-					)
+				@currentFace = {
+					normal: {
+						x: @internalBuffer.readFloatLE(
+							@cursor
+						)
+						y: @internalBuffer.readFloatLE(
+							@cursor += @coordinateByteCount
+						)
+						z: @internalBuffer.readFloatLE(
+							@cursor += @coordinateByteCount
+						)
+					}
 				}
-
-
 
 				@currentFace.vertices = []
 
