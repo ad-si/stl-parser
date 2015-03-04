@@ -13,6 +13,7 @@ class BinaryParser extends stream.Transform
 	constructor: (@options = {}) ->
 		@options.writableObjectMode ?= false
 		@options.readableObjectMode ?= true
+		@options.format ?= 'jsonl'
 		super @options
 
 		@internalBuffer = new Buffer(0)
@@ -33,7 +34,11 @@ class BinaryParser extends stream.Transform
 
 
 	_flush: (done) =>
-		done null, @internalBuffer
+		if @options.format is 'json'
+			@push @currentModel
+			done null, @internalBuffer
+		else
+			done null, @internalBuffer
 
 
 	_transform: (chunk, encoding, done) ->
@@ -47,7 +52,12 @@ class BinaryParser extends stream.Transform
 					@internalBuffer.slice(0, @headerByteCount)
 				).toString()
 				@currentModel.name = @header
-				@push @currentModel
+
+				if @options.format is 'json'
+					@currentModel.faces = []
+				else
+					@push @currentModel
+
 				@cursor += @facesCounterByteCount
 				continue
 
@@ -93,7 +103,10 @@ class BinaryParser extends stream.Transform
 
 				@cursor += @attributeByteCount
 
-				@push @currentFace
+				if @options.format is 'json'
+					@currentModel.faces.push @currentFace
+				else
+					@push @currentFace
 
 				@cursor += @faceByteCount
 				@countedFaces++

@@ -90,26 +90,26 @@ module.exports = (fileContent, options) ->
 	else
 		if options?.type is 'binary'
 			return new GenericStream fileContent
-				.pipe new StlParser {type: 'binary'}
+				.pipe new StlParser {type: 'binary', format: 'json'}
 
 		# TODO: Remove if branch when textEncoding is fixed under node 0.12
 		# https://github.com/inexorabletash/text-encoding/issues/29
 		if Buffer
 			if Buffer.isBuffer fileContent
 				stlString = bufferConverter
-				.toBuffer fileContent
-				.toString()
+					.toBuffer fileContent
+					.toString()
 			else
 				throw new Error "#{typeof fileContent} is no
 						supported data-format!"
-		else
-			stlString = textEncoding
-			.TextDecoder 'utf-8'
-			.decode new Uint8Array fileContent
+		# else
+		# 	stlString = textEncoding
+		# 	.TextDecoder 'utf-8'
+		# 	.decode new Uint8Array fileContent
 
 		if containsKeywords stlString
 			return new GenericStream stlString
 				.pipe new StlParser {type: 'ascii', format: 'json'}
 
 		new GenericStream fileContent
-			.pipe new StlParser {type: 'binary'}
+			.pipe new StlParser {type: 'binary', format: 'json'}
