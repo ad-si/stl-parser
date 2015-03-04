@@ -69,7 +69,44 @@ class StreamTester extends stream.Writable
 
 
 
-describe 'AsciiParser', ->
+describe 'Ascii Parser', ->
+	it 'Transforms stl-stream to jsonl stream', (done) ->
+
+		model = modelsMap['polytopes/tetrahedron']
+		asciiStlStream = fs.createReadStream model.asciiPath
+
+		asciiStreamTester = new StreamTester()
+		asciiStreamTester.on 'finish', -> done()
+		asciiStlStream
+			.pipe stlImporter()
+			.pipe asciiStreamTester
+
+
+	it 'Returns an array of faces', (done) ->
+		asciiStl = fs.readFileSync modelsMap['polytopes/tetrahedron'].asciiPath
+
+		stlImporter asciiStl
+		.on 'data', (data) ->
+			expect(data).to.be.a.triangleMesh
+			done()
+
+
+	it 'Handles stl-files with multi-word names', (done) ->
+		asciiStlStream = fs.createReadStream(
+			modelsMap['multiWordName'].asciiPath
+		)
+		streamTester = new StreamTester {
+			testFirst: (chunk) ->
+				expect(chunk?.name).to.equal 'Model with a multi word name'
+		}
+
+		asciiStlStream
+			.pipe stlImporter()
+			.pipe streamTester
+
+		streamTester.on 'finish', -> done()
+
+
 	it 'Gets next word from internal buffer', () ->
 
 		asciiParser = new AsciiParser
@@ -100,7 +137,52 @@ describe 'AsciiParser', ->
 		expect(asciiParser.lineCounter).to.equal(3)
 
 
-describe 'BinaryParser', ->
+	it 'Fixes faces with 4 or more vertices and emits a warning', (done) ->
+		asciiStl = fs.readFileSync modelsMap['broken/fourVertices'].asciiPath
+
+		stlImporter asciiStl
+		.on 'warning', (warning) ->
+			expect(warning).to.equal('Face 1 has 4 instead of 3 vertices')
+
+		.on 'data', (data) ->
+			expect(data).to.be.a.triangleMesh
+			done()
+
+
+	it 'Fixes faces with 2 or less vertices and emits a warning', (done) ->
+		asciiStl = fs.readFileSync modelsMap['broken/twoVertices'].asciiPath
+
+		stlImporter asciiStl
+		.on 'warning', (warning) ->
+			expect(warning).to.equal('Face 1 has 2 instead of 3 vertices')
+
+		.on 'data', (data) ->
+			expect(data).to.be.a.triangleMesh
+			done()
+
+
+describe 'Binary Parser', ->
+	it 'Transforms stl-stream to jsonl stream', (done) ->
+
+		model = modelsMap['polytopes/tetrahedron']
+		binaryStlStream = fs.createReadStream model.binaryPath
+
+		binaryStreamTester = new StreamTester()
+		binaryStreamTester.on 'finish', -> done()
+		binaryStlStream
+			.pipe stlImporter()
+			.pipe binaryStreamTester
+
+
+	it 'Returns an array of faces', (done) ->
+		model = modelsMap['polytopes/tetrahedron']
+		binaryStl = fs.readFileSync model.binaryPath
+
+		stlImporter binaryStl
+			.on 'data', (data) ->
+				expect(data).to.be.a.triangleMesh
+				done()
+
 
 	it 'Emits a warning if faceCounter and
 	  number of faces do not match', (done) ->
@@ -118,83 +200,7 @@ describe 'BinaryParser', ->
 				done()
 
 
-
-
-describe 'STL Importer', ->
-
-	it 'Transforms ascii stl-stream to jsonl stream', (done) ->
-
-		model = modelsMap['polytopes/tetrahedron']
-		asciiStlStream = fs.createReadStream model.asciiPath
-
-		asciiStreamTester = new StreamTester()
-		asciiStreamTester.on 'finish', -> done()
-		asciiStlStream
-			.pipe stlImporter()
-			.pipe asciiStreamTester
-
-
-	it 'Transforms binary stl-stream to jsonl stream', (done) ->
-
-		model = modelsMap['polytopes/tetrahedron']
-		binaryStlStream = fs.createReadStream model.binaryPath
-
-		binaryStreamTester = new StreamTester()
-		binaryStreamTester.on 'finish', -> done()
-		binaryStlStream
-			.pipe stlImporter()
-			.pipe binaryStreamTester
-
-
-	it 'Handles STL-files with multi-word names', (done) ->
-		asciiStlStream = fs.createReadStream(
-			modelsMap['multiWordName'].asciiPath
-		)
-		streamTester = new StreamTester {
-			testFirst: (chunk) ->
-				expect(chunk?.name).to.equal 'Model with a multi word name'
-		}
-
-		asciiStlStream
-			.pipe stlImporter()
-			.pipe streamTester
-
-		streamTester.on 'finish', -> done()
-
-
-	it 'Returns an array of faces', (done) ->
-		asciiStl = fs.readFileSync modelsMap['polytopes/tetrahedron'].asciiPath
-
-		stlImporter asciiStl
-			.on 'data', (data) ->
-				expect(data).to.be.a.triangleMesh
-				done()
-
-
-	it 'Fixes faces with 4 or more vertices and emits a warning', (done) ->
-		asciiStl = fs.readFileSync modelsMap['broken/fourVertices'].asciiPath
-
-		stlImporter asciiStl
-			.on 'warning', (warning) ->
-				expect(warning).to.equal('Face 1 has 4 instead of 3 vertices')
-
-			.on 'data', (data) ->
-				expect(data).to.be.a.triangleMesh
-				done()
-
-
-	it 'Fixes faces with 2 or less vertices and emits a warning', (done) ->
-		asciiStl = fs.readFileSync modelsMap['broken/twoVertices'].asciiPath
-
-		stlImporter asciiStl
-			.on 'warning', (warning) ->
-				expect(warning).to.equal('Face 1 has 2 instead of 3 vertices')
-
-			.on 'data', (data) ->
-				expect(data).to.be.a.triangleMesh
-				done()
-
-
+describe 'STL Parser', ->
 	it 'Ascii & binary stl have equal faces (maximum delta: 0.00001)', (done) ->
 
 		@timeout '3s'
