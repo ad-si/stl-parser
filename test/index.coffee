@@ -7,7 +7,7 @@ stream = require 'stream'
 stlImporter = require '../src/index'
 AsciiParser = require '../src/AsciiParser'
 
-chai.use require 'chai-as-promised'
+chai.use require './chaiHelper'
 expect = chai.expect
 
 models = [
@@ -172,20 +172,11 @@ describe 'STL Importer', ->
 				done()
 
 
-	it.skip 'ascii & binary version should have equal faces', () ->
-		@timeout('10s')
-
+	it 'Ascii & binary stl have equal faces (maximum delta: 0.00001)', (done) ->
 		asciiStl = fs.readFileSync modelsMap['objects/gearwheel'].asciiPath
 		binaryStl = fs.readFileSync modelsMap['objects/gearwheel'].binaryPath
 
-		return Promise
-		.all([
-				meshlib(asciiStl, {format: 'stl'})
-				.done((model) -> model)
-			,
-				meshlib(binaryStl, {format: 'stl'})
-				.done((model) -> model)
-			])
-		.then (models) =>
-			expect(models[0].mesh.faces).to
-			.equalFaces(models[1].mesh.faces)
+		stlImporter(asciiStl).on 'data', (asciiData) ->
+			stlImporter(binaryStl).on 'data', (binaryData) ->
+				expect(asciiData.faces).to.equalFaces(binaryData.faces)
+				done()
