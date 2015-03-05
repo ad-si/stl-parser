@@ -4,9 +4,6 @@ require 'string.prototype.includes'
 stream = require 'stream'
 util = require 'util'
 
-textEncoding = require 'text-encoding'
-bufferConverter = require 'buffer-converter'
-
 Vector = require './Vector'
 Polygon = require './Polygon'
 errors = require './errors'
@@ -17,7 +14,21 @@ Transform = stream.Transform
 Readable = stream.Readable
 
 
-containsKeywords = (stlString) =>
+toBuffer = (arrayBuffer) ->
+	if Buffer and Buffer.isBuffer arrayBuffer
+		return arrayBuffer
+	else
+		buffer = new Buffer arrayBuffer.byteLength
+		view = new Uint8Array arrayBuffer
+		i = 0
+
+		while i < buffer.length
+			buffer[i] = view[i]
+			++i
+
+		return buffer
+
+containsKeywords = (stlString) ->
 	return stlString.startsWith('solid') and
 			stlString.includes('facet') and
 			stlString.includes ('vertex')
@@ -76,7 +87,9 @@ class StlParser extends Transform
 module.exports = (fileContent, options) ->
 
 	if typeof fileContent is 'undefined' or
-		(typeof fileContent is 'object' and not Buffer.isBuffer(fileContent))
+		(typeof fileContent is 'object' and
+		not Buffer.isBuffer(fileContent)) and
+		not fileContent instanceof ArrayBuffer
 			# fileContent contains options object
 			return new StlParser fileContent
 
@@ -86,26 +99,19 @@ module.exports = (fileContent, options) ->
 				.pipe new StlParser {type: 'ascii', format: 'json'}
 		else
 			throw new Error 'STL string does not contain all stl-keywords!'
-
 	else
 		if options?.type is 'binary'
 			return new GenericStream fileContent
 				.pipe new StlParser {type: 'binary', format: 'json'}
 
-		# TODO: Remove if branch when textEncoding is fixed under node 0.12
-		# https://github.com/inexorabletash/text-encoding/issues/29
-		if Buffer
-			if Buffer.isBuffer fileContent
-				stlString = bufferConverter
-					.toBuffer fileContent
-					.toString()
-			else
-				throw new Error "#{typeof fileContent} is no
-						supported data-format!"
-		# else
-		# 	stlString = textEncoding
-		# 	.TextDecoder 'utf-8'
-		# 	.decode new Uint8Array fileContent
+		if Buffer and Buffer.isBuffer fileContent
+			stlString = fileContent.toString()
+
+		else if fileContent instanceof ArrayBuffer
+			fileContent = toBuffer fileContent
+			stlString = fileContent.toString()
+		else
+			throw new Error fileContent + ' has an unsupported format!'
 
 		if containsKeywords stlString
 			return new GenericStream stlString
