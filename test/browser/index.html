@@ -1,11 +1,46 @@
 <html>
 <head>
-	<meta charset='utf-8'>
+	<meta charset=utf-8>
 	<title>Tests</title>
+	<style>
+		*{
+			font-family: Arial, sans-serif;
+		}
+		main {
+			max-width: 500px;
+			margin: 2em auto;
+		}
+		section {
+			min-height: 100px;
+		}
+	</style>
 </head>
 <body>
 
-<input type="file" id="filesInput" name="files" multiple/>
+<main>
+	<h1>STL Parser</h1>
+
+	<hr/>
+
+	<section id=bufferedLoading>
+		<h2>Buffered Loading</h2>
+		<input type=file name=files multiple/>
+
+		<p></p>
+	</section>
+
+	<hr/>
+
+	<section id=streamedLoading>
+		<h2>Streamed Loading</h2>
+		<input type=file name=files multiple/>
+		<br/>
+		<progress value="0"></progress>
+		<p></p>
+	</section>
+
+	<hr/>
+</main>
 
 <script src='bundle.js'></script>
 
