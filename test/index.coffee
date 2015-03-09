@@ -4,7 +4,7 @@ util = require 'util'
 chai = require 'chai'
 stream = require 'stream'
 
-stlImporter = require '../src/index'
+stlParser = require '../src/index'
 AsciiParser = require '../src/AsciiParser'
 
 chai.use require './chaiHelper'
@@ -78,14 +78,14 @@ describe 'Ascii Parser', ->
 		asciiStreamTester = new StreamTester()
 		asciiStreamTester.on 'finish', -> done()
 		asciiStlStream
-			.pipe stlImporter()
+			.pipe stlParser()
 			.pipe asciiStreamTester
 
 
 	it 'Returns an array of faces', (done) ->
 		asciiStl = fs.readFileSync modelsMap['polytopes/tetrahedron'].asciiPath
 
-		stlImporter asciiStl
+		stlParser asciiStl
 		.on 'data', (data) ->
 			expect(data).to.be.a.triangleMesh
 			done()
@@ -101,7 +101,7 @@ describe 'Ascii Parser', ->
 		}
 
 		asciiStlStream
-			.pipe stlImporter()
+			.pipe stlParser()
 			.pipe streamTester
 
 		streamTester.on 'finish', -> done()
@@ -140,7 +140,7 @@ describe 'Ascii Parser', ->
 	it 'Fixes faces with 4 or more vertices and emits a warning', (done) ->
 		asciiStl = fs.readFileSync modelsMap['broken/fourVertices'].asciiPath
 
-		stlImporter asciiStl
+		stlParser asciiStl
 		.on 'warning', (warning) ->
 			expect(warning).to.equal('Face 1 has 4 instead of 3 vertices')
 
@@ -152,7 +152,7 @@ describe 'Ascii Parser', ->
 	it 'Fixes faces with 2 or less vertices and emits a warning', (done) ->
 		asciiStl = fs.readFileSync modelsMap['broken/twoVertices'].asciiPath
 
-		stlImporter asciiStl
+		stlParser asciiStl
 		.on 'warning', (warning) ->
 			expect(warning).to.equal('Face 1 has 2 instead of 3 vertices')
 
@@ -170,7 +170,7 @@ describe 'Binary Parser', ->
 		binaryStreamTester = new StreamTester()
 		binaryStreamTester.on 'finish', -> done()
 		binaryStlStream
-			.pipe stlImporter()
+			.pipe stlParser()
 			.pipe binaryStreamTester
 
 
@@ -178,7 +178,7 @@ describe 'Binary Parser', ->
 		model = modelsMap['polytopes/tetrahedron']
 		binaryStl = fs.readFileSync model.binaryPath
 
-		stlImporter binaryStl
+		stlParser binaryStl
 			.on 'data', (data) ->
 				expect(data).to.be.a.triangleMesh
 				done()
@@ -190,7 +190,7 @@ describe 'Binary Parser', ->
 		model = modelsMap['broken/incorrectFaceCounter']
 		binaryStl = fs.readFileSync model.binaryPath
 
-		stlImporter binaryStl
+		stlParser binaryStl
 			.on 'warning', (warning) ->
 				expect(warning).to.equal(
 					'Number of specified faces (66) and
@@ -208,7 +208,7 @@ describe 'STL Parser', ->
 		asciiStl = fs.readFileSync modelsMap['objects/gearwheel'].asciiPath
 		binaryStl = fs.readFileSync modelsMap['objects/gearwheel'].binaryPath
 
-		stlImporter(asciiStl).on 'data', (asciiData) ->
-			stlImporter(binaryStl).on 'data', (binaryData) ->
+		stlParser(asciiStl).on 'data', (asciiData) ->
+			stlParser(binaryStl).on 'data', (binaryData) ->
 				expect(asciiData.faces).to.equalFaces(binaryData.faces)
 				done()

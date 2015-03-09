@@ -1,5 +1,5 @@
 {
-  "name": "stl-importer",
+  "name": "stl-parser",
   "version": "0.2.0",
   "scripts": {
     "test": "node_modules/.bin/mocha --compilers coffee:coffee-script/register",
