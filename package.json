@@ -1,6 +1,6 @@
 {
   "name": "stl-parser",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "scripts": {
     "test": "node_modules/.bin/mocha --compilers coffee:coffee-script/register",
     "buildBrowserTests": "./node_modules/.bin/browserify -t ./node_modules/coffeeify/index.js --extension='.coffee' test/browser/index.js > test/browser/bundle.js",
