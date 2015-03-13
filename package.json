@@ -1,7 +1,7 @@
 {
   "name": "stl-parser",
   "version": "0.3.0",
-  "main": "index.js",
+  "main": "build/index.js",
   "scripts": {
     "build": "node_modules/.bin/coffee -c -o build src",
     "test": "node_modules/.bin/mocha --compilers coffee:coffee-script/register",
