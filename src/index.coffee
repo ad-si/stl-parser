@@ -73,7 +73,7 @@ class StlParser extends Transform
 			@parser.on 'end', () =>
 				@push null
 
-			@parser.on 'error', (error) =>
+			@parser.on 'error', (error) ->
 				throw error
 
 			@parser.on 'warning', (warning) =>

@@ -41,7 +41,7 @@ else if typeof global is 'undefined' and window
 
 
 for errorName, errorBody of errors
-	do () =>
+	do () ->
 		scope[errorName] = errorBody
 
 		Inheritor = () -> {}
