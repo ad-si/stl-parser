@@ -3,14 +3,17 @@
   "version": "0.3.0",
   "main": "index.js",
   "scripts": {
+    "build": "node_modules/.bin/coffee -c -o build src",
     "test": "node_modules/.bin/mocha --compilers coffee:coffee-script/register",
     "buildBrowserTests": "./node_modules/.bin/browserify -t ./node_modules/coffeeify/index.js --extension='.coffee' test/browser/index.js > test/browser/bundle.js",
-    "testBrowser": "npm run buildBrowserTests && open test/browser/index.html"
+    "testBrowser": "npm run buildBrowserTests && open test/browser/index.html",
+    "prepublish": "npm run build"
   },
   "devDependencies": {
     "browserify": "^9.0.3",
     "chai": "^2.0.0",
     "chai-as-promised": "^4.2.0",
+    "coffee-script": "^1.9.0",
     "coffeeify": "^1.0.0",
     "filestream": "^3.0.1",
     "mocha": "^2.1.0",
@@ -18,7 +21,6 @@
   },
   "dependencies": {
     "buffertrim": "^1.0.0",
-    "coffee-script": "^1.9.0",
     "string.prototype.includes": "^1.0.0",
     "string.prototype.startswith": "^0.2.0",
     "text-encoding": "^0.5.2"
