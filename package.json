@@ -20,7 +20,7 @@
     "coffeelint-newline-at-eof": "^0.4.1",
     "filestream": "^3.0.1",
     "mocha": "^2.1.0",
-    "stl-models": "Lowfab/stl-models#v0.4.1"
+    "stl-models": "^0.6.0"
   },
   "dependencies": {
     "buffertrim": "^1.0.0",

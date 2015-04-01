@@ -11,7 +11,7 @@ chai.use require './chaiHelper'
 expect = chai.expect
 
 models = [
-	'multiWordName'
+	'misc/multiWordName'
 	'polytopes/triangle'
 	'polytopes/tetrahedron'
 	'polytopes/cube'
@@ -93,7 +93,7 @@ describe 'Ascii Parser', ->
 
 	it 'Handles stl-files with multi-word names', (done) ->
 		asciiStlStream = fs.createReadStream(
-			modelsMap['multiWordName'].asciiPath
+			modelsMap['misc/multiWordName'].asciiPath
 		)
 		streamTester = new StreamTester {
 			testFirst: (chunk) ->
