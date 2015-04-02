@@ -13,8 +13,6 @@ module.exports = () ->
 		console.log('Stl-parser must be used by piping into it')
 
 	else
-		process.stdin.setEncoding 'utf8'
-
 		process.stdin
 		.pipe new StlParser({
 			readableObjectMode: false
