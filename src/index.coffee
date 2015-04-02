@@ -1,17 +1,13 @@
 require 'string.prototype.startswith'
 require 'string.prototype.includes'
 
-stream = require 'stream'
 util = require 'util'
 
 Vector = require './Vector'
 Polygon = require './Polygon'
 errors = require './errors'
-AsciiParser = require './AsciiParser'
-BinaryParser = require './BinaryParser'
-
-Transform = stream.Transform
-Readable = stream.Readable
+GenericStream = require './GenericStream'
+StlParser = require './StlParser'
 
 
 toBuffer = (arrayBuffer) ->
@@ -32,55 +28,6 @@ containsKeywords = (stlString) ->
 	return stlString.startsWith('solid') and
 			stlString.includes('facet') and
 			stlString.includes ('vertex')
-
-
-class GenericStream extends Readable
-	constructor: (@data, @options = {}) ->
-		super @options
-
-	_read: () ->
-		@push @data
-		@push null
-
-
-class StlParser extends Transform
-	constructor: (@options = {}) ->
-		@firstCall = true
-		@options.writableObjectMode ?= false
-		@options.readableObjectMode ?= true
-		super @options
-
-	_flush: (done) ->
-		@parser.end()
-		done()
-
-	_transform: (chunk, encoding, done) ->
-
-		if @firstCall
-			@firstCall = false
-			if chunk.toString().startsWith('solid') or @options.type is 'ascii'
-				@parser = new AsciiParser {format: @options.format}
-			else
-				@parser = new BinaryParser {format: @options.format}
-
-			@parser.on 'data', (data) =>
-				if @options.readableObjectMode
-					@push data
-				else
-					@push JSON.stringify data
-					@push '\n'
-
-			@parser.on 'end', () =>
-				@push null
-
-			@parser.on 'error', (error) ->
-				throw error
-
-			@parser.on 'warning', (warning) =>
-				@emit 'warning', warning
-
-		@parser.write chunk, () ->
-			done()
 
 
 
