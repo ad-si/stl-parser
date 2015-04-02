@@ -1,3 +1,5 @@
+require 'string.prototype.startswith'
+
 stream = require 'stream'
 
 AsciiParser = require './AsciiParser'
