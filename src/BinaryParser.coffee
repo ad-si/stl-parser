@@ -81,7 +81,8 @@ class BinaryParser extends stream.Transform
 
 				@currentModel.faceCount = @facesCounter
 
-				@push @currentModel
+				if @options.format isnt 'json'
+					@push @currentModel
 
 				@cursor += @faceByteCount
 				continue
