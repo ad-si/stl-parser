@@ -24,13 +24,27 @@ class BinaryParser extends stream.Transform
 		@currentModel = {}
 		@currentFace = {}
 
-		@headerByteCount = 80       # 80 * UInt8
-		@vertexByteCount = 12       # 3 * Float
-		@attributeByteCount = 2     # 1 * UInt16
-		@facesCounterByteCount = 4  # 1 x UInt32
-		@faceByteCount = 50         # 4 * vertexByteCount + attributeByteCount
+		# File-structure:
+		#
+		# | header (80 * UInt8) |
+		# | facesCounter (1 * UInt32) |
+		#
+		# face (50 Byte)
+		# | normal (3 * Float) |
+		# | vertex 1 (3 * Float) |
+		# | vertex 2 (3 * Float) |
+		# | vertex 3 (3 * Float) |
+		# | attribute 3 (1 * UInt16) |
+		#
+		# | … |
+
+		@headerByteCount = 80
+		@vertexByteCount = 12
+		@attributeByteCount = 2
+		@facesCounterByteCount = 4
+		@faceByteCount = 50
 		@facesOffset = @headerByteCount + @facesCounterByteCount
-		@coordinateByteCount = 4    # 1 * Float
+		@coordinateByteCount = 4
 
 
 	_flush: (done) =>
