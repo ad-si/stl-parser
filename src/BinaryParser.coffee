@@ -72,14 +72,17 @@ class BinaryParser extends stream.Transform
 
 				if @options.format is 'json'
 					@currentModel.faces = []
-				else
-					@push @currentModel
 
 				@cursor += @facesCounterByteCount
 				continue
 
 			if @cursor is @facesOffset
 				@facesCounter = @internalBuffer.readUInt32LE @headerByteCount
+
+				@currentModel.faceCount = @facesCounter
+
+				@push @currentModel
+
 				@cursor += @faceByteCount
 				continue
 
@@ -115,7 +118,7 @@ class BinaryParser extends stream.Transform
 					}
 
 				@currentFace.attribute = @internalBuffer
-					.readUInt16LE @cursor += @coordinateByteCount
+				.readUInt16LE @cursor += @coordinateByteCount
 
 				@cursor += @attributeByteCount
 
