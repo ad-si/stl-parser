@@ -1,15 +1,18 @@
 {
   "name": "stl-parser",
   "version": "0.5.0",
+  "description": "STL-parser is a transform stream which convert STL-files to newline separated JSON events for each face.",
   "main": "build/index.js",
-  "bin": "cli/index.js",
+  "bin": {
+    "stl-parser": "cli/index.js"
+  },
   "scripts": {
-    "build": "node_modules/.bin/coffee -c -o build src",
-    "test": "node_modules/.bin/mocha --compilers coffee:coffee-script/register",
-    "buildBrowserTests": "./node_modules/.bin/browserify -t ./node_modules/coffeeify/index.js --extension='.coffee' test/browser/index.coffee > test/browser/bundle.js",
+    "build": "coffee -c -o build src",
+    "test": "mocha --compilers coffee:coffee-script/register",
+    "buildBrowserTests": "browserify -t ./node_modules/coffeeify/index.js --extension='.coffee' test/browser/index.coffee > test/browser/bundle.js",
     "testBrowser": "npm run buildBrowserTests && open test/browser/index.html",
     "prepublish": "npm run build",
-    "checkStyle": "node_modules/.bin/coffeelint ."
+    "checkStyle": "coffeelint ."
   },
   "devDependencies": {
     "browserify": "^9.0.3",
@@ -27,5 +30,22 @@
     "buffertrim": "^1.0.0",
     "string.prototype.includes": "^1.0.0",
     "string.prototype.startswith": "^0.2.0"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "keywords": [
+    "stl",
+    "parser"
+  ],
+  "author": "Adrian Sieber",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Lowfab/stl-parser.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Lowfab/stl-parser/issues"
+  },
+  "homepage": "https://github.com/Lowfab/stl-parser"
 }
