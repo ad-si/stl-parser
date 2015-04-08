@@ -6,7 +6,7 @@
   "scripts": {
     "build": "node_modules/.bin/coffee -c -o build src",
     "test": "node_modules/.bin/mocha --compilers coffee:coffee-script/register",
-    "buildBrowserTests": "./node_modules/.bin/browserify -t ./node_modules/coffeeify/index.js --extension='.coffee' test/browser/index.js > test/browser/bundle.js",
+    "buildBrowserTests": "./node_modules/.bin/browserify -t ./node_modules/coffeeify/index.js --extension='.coffee' test/browser/index.coffee > test/browser/bundle.js",
     "testBrowser": "npm run buildBrowserTests && open test/browser/index.html",
     "prepublish": "npm run build",
     "checkStyle": "node_modules/.bin/coffeelint ."
