@@ -36,7 +36,7 @@ module.exports = (fileContent, options) ->
 	if typeof fileContent is 'undefined' or
 		(typeof fileContent is 'object' and
 		not Buffer.isBuffer(fileContent)) and
-		not fileContent instanceof ArrayBuffer
+		fileContent not instanceof ArrayBuffer
 			# fileContent contains options object
 			return new StlParser fileContent
 
