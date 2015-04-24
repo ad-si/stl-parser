@@ -132,7 +132,7 @@ class BinaryParser extends stream.Transform
 				@cursor += @faceByteCount
 				@countedFaces++
 
-		done()
-
+		# Prevent blocking of UI (4ms is the minimum value in HTML5)
+		setTimeout done, 4
 
 module.exports = BinaryParser
