@@ -9,13 +9,13 @@
   "scripts": {
     "build": "coffee -c -o build src",
     "test": "mocha --compilers coffee:coffee-script/register",
-    "buildBrowserTests": "browserify -t ./node_modules/coffeeify/index.js --extension='.coffee' test/browser/index.coffee > test/browser/bundle.js",
+    "buildBrowserTests": "browserify -d -t ./node_modules/coffeeify/index.js --extension='.coffee' test/browser/index.coffee > test/browser/bundle.js",
     "testBrowser": "npm run buildBrowserTests && open test/browser/index.html",
     "prepublish": "npm run build",
     "checkStyle": "coffeelint ."
   },
   "devDependencies": {
-    "browserify": "^9.0.3",
+    "browserify": "^9.0.8",
     "chai": "^2.0.0",
     "chai-as-promised": "^4.2.0",
     "coffee-script": "^1.9.0",
