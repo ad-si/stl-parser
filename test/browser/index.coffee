@@ -1,7 +1,15 @@
 ReadableFileStream = require('filestream').read
+
 stlImporter = require('../../src/index')
+
 bufferedContainer = document.getElementById('bufferedLoading')
 streamedContainer = document.getElementById('streamedLoading')
+progressBar = document.querySelector 'progress'
+
+
+resetProgressDisplay = () ->
+	streamedContainer.querySelector('p').textContent = ''
+	progressBar.setAttribute 'value', '0'
 
 loadBuffered = (changeEvent) ->
 	files = changeEvent.target.files
@@ -10,29 +18,40 @@ loadBuffered = (changeEvent) ->
 	reader.addEventListener 'load', (file) ->
 		stlImporter(file.target.result).on 'data', (data) ->
 			console.log 'Loaded', data
-			bufferedContainer.querySelector('p').textContent = 'Loaded "' +
-				data.name + '"'
+			bufferedContainer.querySelector('p').textContent =
+				'Loaded "' + data.name + '"'
 
 	filesArray.forEach (file, index) ->
 		reader.readAsArrayBuffer files[index]
 
 loadStreamed = (changeEvent) ->
-	files = changeEvent.target.files
-	progress = document.querySelector('progress')
-	stlParser = stlImporter()
-	fileStream = new ReadableFileStream(files[0])
-	counter = 0
-	stlParser.on 'data', (data) ->
-		counter++
-		if counter % 1000 == 1
-			streamedContainer.querySelector('p').textContent = 'Face "' +
-				data.number + '"'
+	changeEvent.preventDefault()
+	changeEvent.stopPropagation()
 
-	fileStream.reader.addEventListener 'progress', (event) ->
-		percentageLoaded = 0
-		if event.lengthComputable
-			percentageLoaded = (event.loaded / event.total).toFixed(2)
-			progress.setAttribute 'value', percentageLoaded
+	resetProgressDisplay()
+
+	files = changeEvent.target.files
+	stlParser = stlImporter()
+	fileStream = new ReadableFileStream files[0]
+
+	faceCounter = 0
+	averageFaceSize = 240 # Byte
+
+	stlParser.on 'data', (data) ->
+
+		if not data.number?
+			if data.faceCount
+				faceCounter = data.faceCount
+			else
+				faceCounter = files[0].size / averageFaceSize
+		else
+			progressBar.setAttribute 'value', String data.number / faceCounter
+
+
+	stlParser.on 'end', () ->
+		progressBar.setAttribute 'value', '1'
+		streamedContainer.querySelector('p').textContent = '✔'
+
 
 	fileStream.on 'error', (error) ->
 		throw error
@@ -40,5 +59,10 @@ loadStreamed = (changeEvent) ->
 	fileStream.pipe stlParser
 
 
-bufferedContainer.querySelector('input').addEventListener 'change', loadBuffered
-streamedContainer.querySelector('input').addEventListener 'change', loadStreamed
+bufferedContainer
+.querySelector 'input'
+.addEventListener 'change', loadBuffered
+
+streamedContainer
+.querySelector 'input'
+.addEventListener 'change', loadStreamed
