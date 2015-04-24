@@ -18,7 +18,7 @@ class BinaryParser extends stream.Transform
 
 		@internalBuffer = new Buffer(0)
 		@header = ''
-		@facesCounter = 0
+		@faceCounter = 0
 		@countedFaces = 0
 		@cursor = 80
 		@currentModel = {}
@@ -48,8 +48,8 @@ class BinaryParser extends stream.Transform
 
 
 	_flush: (done) =>
-		if @facesCounter isnt @countedFaces
-			@emit 'warning', "Number of specified faces (#{@facesCounter}) and
+		if @faceCounter isnt @countedFaces
+			@emit 'warning', "Number of specified faces (#{@faceCounter}) and
                 counted number of faces (#{@countedFaces}) do not match"
 
 		if @options.format is 'json'
@@ -77,9 +77,9 @@ class BinaryParser extends stream.Transform
 				continue
 
 			if @cursor is @facesOffset
-				@facesCounter = @internalBuffer.readUInt32LE @headerByteCount
+				@faceCounter = @internalBuffer.readUInt32LE @headerByteCount
 
-				@currentModel.faceCount = @facesCounter
+				@currentModel.faceCount = @faceCounter
 
 				if @options.format isnt 'json'
 					@push @currentModel
