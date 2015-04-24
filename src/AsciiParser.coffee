@@ -23,7 +23,7 @@ class AsciiParser extends Transform
 		@currentModel = null
 		@currentFace = null
 
-		@faceCounter = 0
+		@countedFaces = 0
 		@lineCounter = 1
 		@characterCounter = 0
 
@@ -80,11 +80,11 @@ class AsciiParser extends Transform
 			if word is 'vertex'
 				if @last is 'loop'
 					@currentFace.vertices = []
-					@currentFace.number = ++@faceCounter
+					@currentFace.number = ++@countedFaces
 
 				if @last is 'vertex-z' or @last is 'loop'
 					if @currentFace.vertices.length >= 3
-						@emit 'warning', "Face #{@faceCounter} has 4
+						@emit 'warning', "Face #{@countedFaces} has 4
 								instead of 3 vertices"
 					else
 						@currentVertex = {
@@ -95,7 +95,7 @@ class AsciiParser extends Transform
 						@currentFace.vertices.push @currentVertex
 				else
 					throw new Error "Unexpected vertex after #{@last}
-								in face #{@faceCounter} in line #{@lineCounter}"
+								in face #{@countedFaces} in line #{@lineCounter}"
 
 				@last = 'vertex'
 				continue
@@ -107,7 +107,7 @@ class AsciiParser extends Transform
 						@push @currentModel
 				else if @last isnt 'endfacet'
 					throw new Error "Unexpected facet after #{@last}
-								in face #{@faceCounter} in line #{@lineCounter}"
+								in face #{@countedFaces} in line #{@lineCounter}"
 
 				@last = 'facet'
 				continue
@@ -145,12 +145,12 @@ class AsciiParser extends Transform
 					continue
 				else
 					throw new Error "Unexpected outer after #{@last}
-								in face #{@faceCounter} in line #{@lineCounter}"
+								in face #{@countedFaces} in line #{@lineCounter}"
 
 			if word is 'loop'
 				if @last isnt 'outer'
 					throw new Error "Unexpected loop after #{@last}
-								in face #{@faceCounter} in line #{@lineCounter}"
+								in face #{@countedFaces} in line #{@lineCounter}"
 
 				@last = 'loop'
 				continue
@@ -158,10 +158,10 @@ class AsciiParser extends Transform
 			if word is 'endloop'
 				if @last isnt 'vertex-z'
 					throw new Error "Unexpected endloop after #{@last}
-								in face #{@faceCounter} in line #{@lineCounter}"
+								in face #{@countedFaces} in line #{@lineCounter}"
 
 				else if @currentFace.vertices.length <= 2
-					@emit 'warning', "Face #{@faceCounter} has
+					@emit 'warning', "Face #{@countedFaces} has
 						#{@currentFace.vertices.length} instead of 3 vertices"
 					@currentFace = null
 
@@ -177,7 +177,7 @@ class AsciiParser extends Transform
 							@push @currentFace
 				else
 					@emit 'error', new Error "Unexpected endfacet after #{@last}
-								in face #{@faceCounter} in line #{@lineCounter}"
+								in face #{@countedFaces} in line #{@lineCounter}"
 				@last = 'endfacet'
 				continue
 
@@ -188,7 +188,7 @@ class AsciiParser extends Transform
 					@push null
 				else
 					throw new Error "Unexpected endsolid after #{@last}
-								in face #{@faceCounter} in line #{@lineCounter}"
+								in face #{@countedFaces} in line #{@lineCounter}"
 
 				@last = 'endsolid'
 				continue
@@ -200,7 +200,7 @@ class AsciiParser extends Transform
 						@currentModel.faces = []
 				else
 					throw new Error "Unexpected solid after #{@last}
-								in face #{@faceCounter} in line #{@lineCounter}"
+								in face #{@countedFaces} in line #{@lineCounter}"
 				@last = 'solid'
 				continue
 
