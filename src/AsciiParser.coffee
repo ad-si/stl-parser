@@ -13,6 +13,7 @@ class AsciiParser extends Transform
 	constructor: (@options = {}) ->
 		@options.writableObjectMode ?= false
 		@options.readableObjectMode ?= true
+		@options.blocking ?= true
 		@options.format ?= 'jsonl'
 
 		super @options
@@ -214,7 +215,10 @@ class AsciiParser extends Transform
 				@last = 'name'
 				continue
 
-		# Prevent blocking of UI (4ms is the minimum value in HTML5)
-		setTimeout done, 4
+		# Make blocking of UI optional (4ms is the minimum value in HTML5)
+		if @options.blocking
+			done()
+		else
+			setTimeout done, 4
 
 module.exports = AsciiParser

@@ -43,13 +43,19 @@ module.exports = (fileContent, options) ->
 	if options?.type is 'ascii' or typeof fileContent is 'string'
 		if containsKeywords fileContent
 			return new GenericStream fileContent
-				.pipe new StlParser {type: 'ascii', format: 'json'}
+				.pipe new StlParser {
+					type: 'ascii'
+					format: 'json'
+				}
 		else
 			throw new Error 'STL string does not contain all stl-keywords!'
 	else
 		if options?.type is 'binary'
 			return new GenericStream fileContent
-				.pipe new StlParser {type: 'binary', format: 'json'}
+				.pipe new StlParser {
+					type: 'binary'
+					format: 'json'
+				}
 
 		if Buffer and Buffer.isBuffer fileContent
 			stlString = fileContent.toString()
@@ -62,7 +68,13 @@ module.exports = (fileContent, options) ->
 
 		if containsKeywords stlString
 			return new GenericStream stlString
-				.pipe new StlParser {type: 'ascii', format: 'json'}
+				.pipe new StlParser {
+					type: 'ascii'
+					format: 'json'
+				}
 
 		new GenericStream fileContent
-			.pipe new StlParser {type: 'binary', format: 'json'}
+			.pipe new StlParser {
+				type: 'binary'
+				format: 'json'
+			}

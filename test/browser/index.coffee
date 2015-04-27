@@ -1,6 +1,6 @@
 ReadableFileStream = require('filestream').read
 
-stlImporter = require('../../src/index')
+stlParser = require('../../src/index')
 
 bufferedContainer = document.getElementById('bufferedLoading')
 streamedContainer = document.getElementById('streamedLoading')
@@ -32,7 +32,7 @@ loadBuffered = (changeEvent) ->
 	reader = new FileReader
 
 	reader.addEventListener 'load', (event) ->
-		stlImporter(event.target.result).on 'data', (data) ->
+		stlParser(event.target.result).on 'data', (data) ->
 			bufferedContainer
 			.querySelector('p')
 			.textContent = getFinishString(
@@ -52,14 +52,14 @@ loadStreamed = (changeEvent) ->
 	files = changeEvent.target.files
 	checkFilesCount files
 
-	stlParser = stlImporter()
+	streamingStlParser = stlParser {blocking: false}
 	fileStream = new ReadableFileStream files[0]
 
 	faceCounter = 0
 	averageFaceSize = 240 # Byte
 	modelName = ''
 
-	stlParser.on 'data', (data) ->
+	streamingStlParser.on 'data', (data) ->
 		if not data.number?
 			faceCounter =
 			if data.faceCount
@@ -69,7 +69,7 @@ loadStreamed = (changeEvent) ->
 		else
 			progressBar.setAttribute 'value', String data.number / faceCounter
 
-	stlParser.on 'end', () ->
+	streamingStlParser.on 'end', () ->
 		progressBar.setAttribute 'value', '1'
 		streamedContainer.querySelector('p').textContent = getFinishString(
 			modelName
@@ -82,7 +82,7 @@ loadStreamed = (changeEvent) ->
 		throw error
 
 	startTime = new Date()
-	fileStream.pipe stlParser
+	fileStream.pipe streamingStlParser
 
 
 bufferedContainer

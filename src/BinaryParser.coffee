@@ -13,7 +13,9 @@ class BinaryParser extends stream.Transform
 	constructor: (@options = {}) ->
 		@options.writableObjectMode ?= false
 		@options.readableObjectMode ?= true
+		@options.blocking ?= true
 		@options.format ?= 'jsonl'
+
 		super @options
 
 		@internalBuffer = new Buffer(0)
@@ -50,7 +52,7 @@ class BinaryParser extends stream.Transform
 	_flush: (done) =>
 		if @faceCounter isnt @countedFaces
 			@emit 'warning', "Number of specified faces (#{@faceCounter}) and
-                counted number of faces (#{@countedFaces}) do not match"
+				counted number of faces (#{@countedFaces}) do not match"
 
 		if @options.format is 'json'
 			@push @currentModel
@@ -132,7 +134,10 @@ class BinaryParser extends stream.Transform
 				@cursor += @faceByteCount
 				@countedFaces++
 
-		# Prevent blocking of UI (4ms is the minimum value in HTML5)
-		setTimeout done, 4
+		# Make blocking of UI optional (4ms is the minimum value in HTML5)
+		if @options.blocking
+			done()
+		else
+			setTimeout done, 4
 
 module.exports = BinaryParser
