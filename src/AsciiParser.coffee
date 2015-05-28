@@ -5,6 +5,7 @@ Ascii = require './Ascii'
 Binary = require './Binary'
 Polygon = require './Polygon'
 Vector = require './Vector'
+toNumber = require './toNumber'
 
 Transform = stream.Transform
 
@@ -71,17 +72,38 @@ class AsciiParser extends Transform
 			# in STL-files
 
 			if @last is 'vertex'
-				@currentVertex.x = Number word
+				try
+					@currentVertex.x = toNumber word
+				catch error
+					@emit(
+						'error',
+						new Error "Unexpected '#{word}' instead of vertex x-value
+						in face #{@currentFace.number}, line #{@lineCounter}"
+					)
 				@last = 'vertex-x'
 				continue
 
 			if @last is 'vertex-x'
-				@currentVertex.y = Number word
+				try
+					@currentVertex.y = toNumber word
+				catch error
+					@emit(
+						'error',
+						new Error "Unexpected '#{word}' instead of vertex y-value
+						in face #{@currentFace.number}, line #{@lineCounter}"
+					)
 				@last = 'vertex-y'
 				continue
 
 			if @last is 'vertex-y'
-				@currentVertex.z = Number word
+				try
+					@currentVertex.z = toNumber word
+				catch error
+					@emit(
+						'error',
+						new Error "Unexpected '#{word}' instead of vertex z-value
+						in face #{@currentFace.number}, line #{@lineCounter}"
+					)
 				@last = 'vertex-z'
 				continue
 
