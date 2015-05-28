@@ -16,6 +16,7 @@ class AsciiParser extends Transform
 		@options.readableObjectMode ?= true
 		@options.blocking ?= true
 		@options.format ?= 'jsonl'
+		@options.discardExcessVertices ?= true
 
 		super @options
 
