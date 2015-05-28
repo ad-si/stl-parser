@@ -41,7 +41,9 @@ module.exports = (fileContent, options) ->
 			return new StlParser fileContent
 
 	if options?.type is 'ascii' or typeof fileContent is 'string'
-		if containsKeywords fileContent
+		if fileContent is ''
+			throw new Error 'Provided STL-string must not be empty'
+		else if containsKeywords fileContent
 			return new GenericStream fileContent
 				.pipe new StlParser {
 					type: 'ascii'
