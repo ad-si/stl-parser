@@ -41,8 +41,8 @@ class StlParser extends stream.Transform
 			@parser.on 'end', () =>
 				@push null
 
-			@parser.on 'error', (error) ->
-				throw error
+			@parser.on 'error', (error) =>
+				@emit 'error', error
 
 			@parser.on 'warning', (warning) =>
 				@emit 'warning', warning
