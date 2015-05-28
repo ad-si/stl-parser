@@ -17,7 +17,10 @@ class StlParser extends stream.Transform
 		if @parser
 			@parser.end()
 		else
-			@emit 'error', 'Provided STL-string must not be empty'
+			@emit(
+				'error',
+				new Error 'Provided STL-string must not be empty'
+			)
 
 		done()
 
