@@ -50,7 +50,11 @@ class BinaryParser extends stream.Transform
 
 
 	_flush: (done) =>
-		if @faceCounter isnt @countedFaces
+
+		if @countedFaces is 0
+			@emit 'error', 'No faces where specified in the STL'
+
+		else if @faceCounter isnt @countedFaces
 			@emit 'warning', "Number of specified faces (#{@faceCounter}) and
 				counted number of faces (#{@countedFaces}) do not match"
 
