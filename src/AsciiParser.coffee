@@ -110,21 +110,16 @@ class AsciiParser extends Transform
 
 
 			if word is 'vertex'
-				if @last is 'loop'
-					@currentFace.vertices = []
-					@currentFace.number = ++@countedFaces
-
 				if @last is 'vertex-z' or @last is 'loop'
-					if @currentFace.vertices.length >= 3
-						@emit 'warning', "Face #{@countedFaces} has 4
-								instead of 3 vertices"
-					else
-						@currentVertex = {
-							x: null,
-							y: null,
-							z: null
-						}
-						@currentFace.vertices.push @currentVertex
+					if @last is 'loop'
+						@currentFace.vertices = []
+
+					@currentVertex = {
+						x: null,
+						y: null,
+						z: null
+					}
+					@currentFace.vertices.push @currentVertex
 
 				else
 					@emit(
