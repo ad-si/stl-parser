@@ -1,20 +1,24 @@
 fs = require 'fs'
 path = require 'path'
 
-#yaml = require 'js-yaml'
-#bufferConverter = require 'buffer-converter'
+chalk = require 'chalk'
 
 StlParser = require './StlParser'
 
 
+stlParser = new StlParser {
+	readableObjectMode: false
+}
+
+
 module.exports = () ->
 	if process.stdin.isTTY
-
-		console.log('Stl-parser must be used by piping into it')
+		console.error chalk.red 'Stl-parser must be used by piping into it'
 
 	else
 		process.stdin
-		.pipe new StlParser({
-			readableObjectMode: false
-		})
+		.pipe stlParser
 		.pipe process.stdout
+
+		stlParser.on 'error', (error) ->
+			console.error chalk.red error
