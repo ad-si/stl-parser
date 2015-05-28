@@ -11,7 +11,7 @@
     "test": "mocha --compilers coffee:coffee-script/register",
     "buildBrowserTests": "browserify -d -t ./node_modules/coffeeify/index.js --extension='.coffee' test/browser/index.coffee > test/browser/bundle.js",
     "testBrowser": "npm run buildBrowserTests && open test/browser/index.html",
-    "prepublish": "npm run build",
+    "prepublish": "npm run build && npm run test",
     "checkStyle": "coffeelint ."
   },
   "devDependencies": {
