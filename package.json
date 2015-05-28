@@ -1,6 +1,6 @@
 {
   "name": "stl-parser",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "STL-parser is a transform stream which convert STL-files to newline separated JSON events for each face.",
   "main": "build/index.js",
   "bin": {
