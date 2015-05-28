@@ -14,7 +14,11 @@ class StlParser extends stream.Transform
 		super @options
 
 	_flush: (done) ->
-		@parser.end()
+		if @parser
+			@parser.end()
+		else
+			@emit 'error', 'Provided STL-string must not be empty'
+
 		done()
 
 	_transform: (chunk, encoding, done) ->
