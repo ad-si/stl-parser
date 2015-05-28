@@ -22,3 +22,6 @@ module.exports = () ->
 
 		stlParser.on 'error', (error) ->
 			console.error chalk.red error.message
+
+		stlParser.on 'warning', (warning) ->
+			console.warn chalk.yellow warning
