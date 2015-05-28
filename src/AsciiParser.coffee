@@ -226,7 +226,8 @@ class AsciiParser extends Transform
 
 			if word is 'endfacet'
 				if @last is 'endloop'
-					if @currentFace
+					if @currentFace and @currentFace.vertices
+						@countedFaces++
 						if @options.format is 'json'
 							@currentModel.faces.push @currentFace
 						else
