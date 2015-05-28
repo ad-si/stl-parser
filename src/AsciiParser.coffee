@@ -49,6 +49,9 @@ class AsciiParser extends Transform
 
 
 	_flush: (done) =>
+		if @countedFaces is 0
+			@emit 'error', 'No faces were specified in the ascii STL'
+
 		done null, @internalBuffer
 
 
