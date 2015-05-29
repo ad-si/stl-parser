@@ -23,7 +23,10 @@ class AsciiParser extends Transform
 		@debugBuffer = ''
 		@internalBuffer = ''
 		@last = 'root'
-		@currentModel = null
+		@currentModel = {
+			name: null
+			isClosed: false
+		}
 		@currentFace = {
 			number: 0
 		}
@@ -57,6 +60,13 @@ class AsciiParser extends Transform
 			@emit(
 				'error',
 				new Error 'Provided ascii STL contains an invalid solid'
+			)
+
+		if not @currentModel.isClosed and @internalBuffer isnt 'endsolid'
+			@emit(
+				'error',
+				new Error 'Provided ascii STL is not
+				closed with endsolid keyword'
 			)
 
 		if @countedFaces is 0
@@ -250,7 +260,9 @@ class AsciiParser extends Transform
 				if @internalBuffer.trim() is @currentModel.name
 					@push null
 
-				if @last isnt 'endfacet' and @last isnt 'solid'
+				if @last is 'endfacet' or @last is 'solid'
+					@currentModel.isClosed = true
+				else
 					@emit(
 						'error',
 						new Error "Unexpected endsolid after #{@last}
@@ -262,7 +274,10 @@ class AsciiParser extends Transform
 
 			if word is 'solid'
 				if @last is 'root' or @last is 'endsolid'
-					@currentModel = {name: null}
+					@currentModel = {
+						name: null
+						isClosed: false
+					}
 					@currentFace = {number: 0}
 					if @options.format is 'json'
 						@currentModel.faces = []
