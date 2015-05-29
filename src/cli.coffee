@@ -30,3 +30,6 @@ module.exports = (options) ->
 
 		stlParser.on 'warning', (warning) ->
 			console.warn chalk.yellow 'Warning:', warning
+
+		stlParser.on 'debug', (debugInfo) ->
+			console.warn chalk.cyan 'Debug:', debugInfo
