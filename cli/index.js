@@ -1,3 +1,5 @@
 #! /usr/bin/env node
 
-require('../build/cli')()
+var yargs = require('yargs')
+
+require('../build/cli')(yargs.argv)

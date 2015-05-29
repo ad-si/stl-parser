@@ -6,12 +6,17 @@ chalk = require 'chalk'
 StlParser = require './StlParser'
 
 
-stlParser = new StlParser {
-	readableObjectMode: false
-}
+module.exports = (options) ->
 
+	if options.ascii
+		options.type = 'ascii'
+	if options.binary
+		options.type = 'binary'
 
-module.exports = () ->
+	options.readableObjectMode = false
+
+	stlParser = new StlParser options
+
 	if process.stdin.isTTY
 		console.error chalk.red 'Stl-parser must be used by piping into it'
 
