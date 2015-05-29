@@ -257,9 +257,6 @@ class AsciiParser extends Transform
 				if @options.format is 'json' or @last is 'solid'
 					@push @currentModel
 
-				if @internalBuffer.trim() is @currentModel.name
-					@push null
-
 				if @last is 'endfacet' or @last is 'solid'
 					@currentModel.isClosed = true
 				else
@@ -268,6 +265,9 @@ class AsciiParser extends Transform
 						new Error "Unexpected endsolid after #{@last}
 						in face #{@currentFace.number} in line #{@lineCounter}"
 					)
+
+				if @internalBuffer.trim() is @currentModel.name
+					@push null
 
 				@last = 'endsolid'
 				continue
