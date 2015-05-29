@@ -78,6 +78,13 @@ class AsciiParser extends Transform
 				does not contain any faces"
 			)
 
+		if not @currentModel.isClosed and @countedFaces is 0
+			@emit(
+				'warning',
+				'Provided ascii STL should
+				probably be parsed as a binary STL'
+			)
+
 		done()
 
 
