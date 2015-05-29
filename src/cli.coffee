@@ -24,4 +24,4 @@ module.exports = () ->
 			console.error chalk.red error
 
 		stlParser.on 'warning', (warning) ->
-			console.warn chalk.yellow warning
+			console.warn chalk.yellow 'Warning:', warning
