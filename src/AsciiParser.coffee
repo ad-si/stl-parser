@@ -76,7 +76,7 @@ class AsciiParser extends Transform
 				does not contain any faces"
 			)
 
-		done null, @internalBuffer
+		done()
 
 
 	_transform: (chunk, encoding, done) =>
