@@ -23,6 +23,20 @@ npm install -g stl-parser
 
 ## Usage
 
+### Command Line Interface
+
+
+```sh
+cat test.stl | stl-parser
+```
+
+This emits a jsonl file-stream with header and facet events.
+The cli flags `--ascii` and `--binary` can be used to enforce
+parsing with the specified file-encoding.
+
+
+### Javascript API
+
 ```js
 var stlParser = require('stl-parser'),
 	stlStream = fs.createReadStream('/path/to/stl/file.stl'),
