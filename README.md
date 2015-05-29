@@ -8,7 +8,17 @@ of the jsonl format.
 
 ## Installation
 
-`$ npm install stl-parser`
+As a module for your project:
+
+```sh
+npm install stl-parser
+```
+
+As a command line program:
+
+```sh
+npm install -g stl-parser
+```
 
 
 ## Usage
