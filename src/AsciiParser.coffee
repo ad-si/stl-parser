@@ -53,10 +53,17 @@ class AsciiParser extends Transform
 
 
 	_flush: (done) =>
-		if @countedFaces is 0
+		if @currentModel.name is null
 			@emit(
 				'error',
-				new Error 'No faces were specified in the ascii STL'
+				new Error 'Provided ascii STL contains an invalid solid'
+			)
+
+		if @countedFaces is 0
+			@emit(
+				'warning',
+				"Solid '#{@currentModel.name}'
+				does not contain any faces"
 			)
 
 		done null, @internalBuffer
@@ -135,7 +142,7 @@ class AsciiParser extends Transform
 				@currentFace = {
 					number: @countedFaces + 1
 				}
-				if @last is 'solid' or @last is 'name'
+				if @last is 'solid'
 					if @options.format isnt 'json'
 						@push @currentModel
 				else if @last isnt 'endfacet'
@@ -237,13 +244,13 @@ class AsciiParser extends Transform
 				continue
 
 			if word is 'endsolid'
-				if @last is 'endfacet'
-					if @options.format is 'json'
-						@push @currentModel
+				if @options.format is 'json' or @last is 'solid'
+					@push @currentModel
 
-					if @internalBuffer.trim() is @currentModel.name
-						@push null
-				else
+				if @internalBuffer.trim() is @currentModel.name
+					@push null
+
+				if @last isnt 'endfacet' and @last isnt 'solid'
 					@emit(
 						'error',
 						new Error "Unexpected endsolid after #{@last}
@@ -268,14 +275,11 @@ class AsciiParser extends Transform
 				@last = 'solid'
 				continue
 
-			if @last is 'name'
-				@currentModel.name += ' ' + word
-				@last = 'name'
-				continue
-
 			if @last is 'solid'
-				@currentModel.name = word
-				@last = 'name'
+				if typeof @currentModel.name is 'string'
+					@currentModel.name += ' ' + word
+				else
+					@currentModel.name = word
 				continue
 
 		# Make blocking of UI optional (4ms is the minimum value in HTML5)
