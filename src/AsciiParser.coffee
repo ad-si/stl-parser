@@ -240,7 +240,9 @@ class AsciiParser extends Transform
 				if @last is 'endfacet'
 					if @options.format is 'json'
 						@push @currentModel
-					@push null
+
+					if @internalBuffer.trim() is @currentModel.name
+						@push null
 				else
 					@emit(
 						'error',
@@ -252,8 +254,9 @@ class AsciiParser extends Transform
 				continue
 
 			if word is 'solid'
-				if @last is 'root'
+				if @last is 'root' or @last is 'endsolid'
 					@currentModel = {name: null}
+					@currentFace = {number: 0}
 					if @options.format is 'json'
 						@currentModel.faces = []
 				else
