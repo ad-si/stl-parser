@@ -21,7 +21,7 @@ module.exports = () ->
 		.pipe process.stdout
 
 		stlParser.on 'error', (error) ->
-			console.error chalk.red error.message
+			console.error chalk.red error
 
 		stlParser.on 'warning', (warning) ->
 			console.warn chalk.yellow warning
