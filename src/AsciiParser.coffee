@@ -57,19 +57,6 @@ class AsciiParser extends Transform
 
 
 	_flush: (done) =>
-		if @currentModel.name is null
-			@emit(
-				'error',
-				new Error 'Provided ascii STL contains an invalid solid'
-			)
-
-		if not @currentModel.isClosed and @internalBuffer isnt 'endsolid'
-			@emit(
-				'error',
-				new Error 'Provided ascii STL is not
-				closed with endsolid keyword'
-			)
-
 		if @countedFaces is 0
 			if @currentModel.name.length > 50
 				@currentModel.name = @currentModel.name.substr(0,50) + '…'
@@ -85,6 +72,13 @@ class AsciiParser extends Transform
 				'Provided ascii STL should
 				probably be parsed as a binary STL'
 			)
+
+		if @currentModel.name is null
+			return done new Error 'Provided ascii STL contains an invalid solid'
+
+		if not @currentModel.isClosed and @internalBuffer isnt 'endsolid'
+			return done new Error 'Provided ascii STL is not
+				closed with endsolid keyword'
 
 		done()
 
