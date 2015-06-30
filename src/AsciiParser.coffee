@@ -37,7 +37,8 @@ class AsciiParser extends Transform
 
 
 	getNextWord: () =>
-		if /^\s*\n\s*/gi.test @internalBuffer then @lineCounter++
+		if /^\s*\n\s*/gi.test @internalBuffer
+			@lineCounter++
 
 		whitespace = @internalBuffer.match /^\s+/
 
