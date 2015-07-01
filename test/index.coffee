@@ -184,7 +184,6 @@ describe 'Ascii Parser', ->
 			done()
 
 
-
 describe 'Binary Parser', ->
 	it 'Transforms stl-stream to jsonl stream', (done) ->
 
@@ -244,7 +243,7 @@ unless /^win/.test os.platform
 			filePath = modelsMap['polytopes/cube'].asciiPath
 
 			childProcess.exec(
-				"cat #{filePath} | coffee #{__dirname + path.sep}cli.coffee",
+				"cat #{filePath} | #{__dirname + path.sep}cli.coffee",
 				(error, stdout, stderr) ->
 					if error then done error
 					if stderr then done stderr
