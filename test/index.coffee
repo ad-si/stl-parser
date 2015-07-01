@@ -3,6 +3,8 @@ path = require 'path'
 util = require 'util'
 chai = require 'chai'
 stream = require 'stream'
+os = require 'os'
+childProcess = require 'child_process'
 
 stlParser = require '../src/index'
 AsciiParser = require '../src/AsciiParser'
@@ -234,3 +236,18 @@ describe 'STL Parser', ->
 			stlParser(binaryStl).on 'data', (binaryData) ->
 				expect(asciiData.faces).to.equalFaces(binaryData.faces)
 				done()
+
+
+unless /^win/.test os.platform
+	describe 'CLI', ->
+		it 'Parses an ascii-stl file-stream', (done) ->
+			filePath = modelsMap['polytopes/cube'].asciiPath
+
+			childProcess.exec(
+				"cat #{filePath} | coffee #{__dirname + path.sep}cli.coffee",
+				(error, stdout, stderr) ->
+					if error then done error
+					if stderr then done stderr
+					expect(stdout.length).to.equal 1476
+					done()
+			)
