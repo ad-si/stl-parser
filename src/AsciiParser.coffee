@@ -49,10 +49,15 @@ class AsciiParser extends Transform
 		words = @internalBuffer.match /^\S+/
 
 		if (words is null) or (words[0].length is @internalBuffer.length)
+			@emit 'progress', 1
 			return null
 		else
 			@characterCounter += words[0].length
 			@internalBuffer = @internalBuffer.substr words[0].length
+
+			if @options.size > 0
+				@emit 'progress', @characterCounter / @options.size
+
 			return words[0]
 
 

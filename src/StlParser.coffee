@@ -50,6 +50,9 @@ class StlParser extends stream.Transform
 			@parser.on 'warning', (warning) =>
 				@emit 'warning', warning
 
+			@parser.on 'progress', (progress) =>
+				@emit 'progress', progress
+
 		@parser.write chunk, () ->
 			done()
 

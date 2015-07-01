@@ -161,6 +161,28 @@ describe 'Ascii Parser', ->
 			done()
 
 
+	it 'Emits progress events', (done) ->
+		filePath = modelsMap['polytopes/cube'].asciiPath
+		fileStats = fs.statSync filePath
+		asciiStlStream = fs.createReadStream filePath
+		streamTester = new StreamTester()
+		numberOfProgressEvents = 0
+
+		parser = stlParser {size: fileStats.size}
+		parser.on 'progress', (progress) ->
+			expect(progress).to.be.within 0, 1
+			numberOfProgressEvents++
+
+		asciiStlStream
+			.pipe parser
+			.pipe streamTester
+
+		streamTester.on 'finish', ->
+			expect(numberOfProgressEvents).to.equal 257
+			done()
+
+
+
 describe 'Binary Parser', ->
 	it 'Transforms stl-stream to jsonl stream', (done) ->
 
