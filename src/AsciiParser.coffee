@@ -306,9 +306,7 @@ class AsciiParser extends Transform
 					@currentModel.name = word
 				continue
 
-		# Make blocking of UI optional
-		# in browser environment (4ms is the minimum value in HTML5)
-		# if typeof window is 'undefined' or @options.blocking
+		# Make blocking of UI optional (4ms is the minimum value in HTML5)
 		if @options.blocking
 			done()
 		else
