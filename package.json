@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "coffee -c -o build src",
-    "test": "mocha --compilers coffee:coffee-script/register",
+    "test": "mocha --compilers coffee:coffee-script/register test/index.coffee",
     "buildBrowserTests": "browserify -d -t ./node_modules/coffeeify/index.js --extension='.coffee' test/browser/index.coffee > test/browser/bundle.js",
     "testBrowser": "npm run buildBrowserTests && open test/browser/index.html",
     "prepublish": "npm run build && npm run test",
