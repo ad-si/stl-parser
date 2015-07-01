@@ -28,15 +28,11 @@ class StlParser extends stream.Transform
 		if @firstCall
 			@firstCall = false
 
-			parserOptions = {
-				format: @options.format
-				blocking: @options.blocking
-			}
-			@parser = new BinaryParser parserOptions
+			@parser = new BinaryParser @options
 
 			if (@options.type isnt 'binary' and chunk.toString().startsWith(
 				'solid')) or @options.type is 'ascii'
-				@parser = new AsciiParser parserOptions
+				@parser = new AsciiParser @options
 
 			@parser.on 'data', (data) =>
 				if @options.readableObjectMode
