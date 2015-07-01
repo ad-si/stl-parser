@@ -1,6 +1,7 @@
 require 'string.prototype.startswith'
 
 stream = require 'stream'
+clone = require 'clone'
 
 AsciiParser = require './AsciiParser'
 BinaryParser = require './BinaryParser'
@@ -28,11 +29,11 @@ class StlParser extends stream.Transform
 		if @firstCall
 			@firstCall = false
 
-			@parser = new BinaryParser @options
+			@parser = new BinaryParser clone @options
 
 			if (@options.type isnt 'binary' and chunk.toString().startsWith(
 				'solid')) or @options.type is 'ascii'
-				@parser = new AsciiParser @options
+				@parser = new AsciiParser clone @options
 
 			@parser.on 'data', (data) =>
 				if @options.readableObjectMode

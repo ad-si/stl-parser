@@ -29,6 +29,7 @@
   "dependencies": {
     "buffertrim": "^1.0.0",
     "chalk": "^1.0.0",
+    "clone": "^1.0.2",
     "string.prototype.includes": "^1.0.0",
     "string.prototype.startswith": "^0.2.0",
     "yargs": "^3.9.1"
