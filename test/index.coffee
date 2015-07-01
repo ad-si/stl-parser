@@ -250,3 +250,16 @@ unless /^win/.test os.platform
 					expect(stdout.length).to.equal 1476
 					done()
 			)
+
+
+		it 'Parses an binary-stl file-stream', (done) ->
+			filePath = modelsMap['polytopes/cube'].binaryPath
+
+			childProcess.exec(
+				"cat #{filePath} | #{__dirname + path.sep}cli.coffee",
+				(error, stdout, stderr) ->
+					if error then done error
+					if stderr then done stderr
+					expect(stdout.length).to.equal 1641
+					done()
+			)
