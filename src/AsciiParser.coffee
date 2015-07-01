@@ -12,8 +12,8 @@ Transform = stream.Transform
 
 class AsciiParser extends Transform
 	constructor: (@options = {}) ->
-		@options.writableObjectMode ?= false
-		@options.readableObjectMode ?= true
+		@options.writableObjectMode = false
+		@options.readableObjectMode = true
 		@options.blocking ?= true
 		@options.format ?= 'jsonl'
 		@options.discardExcessVertices ?= true

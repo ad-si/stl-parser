@@ -11,8 +11,8 @@ Vector = require './Vector'
 
 class BinaryParser extends stream.Transform
 	constructor: (@options = {}) ->
-		@options.writableObjectMode ?= false
-		@options.readableObjectMode ?= true
+		@options.writableObjectMode = false
+		@options.readableObjectMode = true
 		@options.blocking ?= true
 		@options.format ?= 'jsonl'
 
