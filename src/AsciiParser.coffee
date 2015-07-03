@@ -277,6 +277,8 @@ class AsciiParser extends Transform
 
 				if @internalBuffer.trim() is @currentModel.name
 					@push null
+				else
+					@emit 'warning', 'Solid and endsolid name do not match'
 
 				@last = 'endsolid'
 				continue

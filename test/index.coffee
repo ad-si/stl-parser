@@ -22,6 +22,7 @@ models = [
 	'broken/twoVertices'
 	'broken/wrongNormals'
 	'broken/incorrectFaceCounter'
+	'broken/solidNameMismatch'
 
 	'objects/gearwheel'
 	'objects/bunny'
@@ -106,7 +107,27 @@ describe 'Ascii Parser', ->
 			.pipe stlParser()
 			.pipe streamTester
 
-		streamTester.on 'finish', -> done()
+		streamTester.on 'finish', done
+
+
+	it 'Emits a warning at mismatching solid and endsolid names', (done) ->
+		asciiStlStream = fs.createReadStream(
+			modelsMap['broken/solidNameMismatch'].asciiPath
+		)
+		streamTester = new StreamTester {
+			testFirst: (chunk) ->
+				expect(chunk?.name).to.equal 'tetrahedron'
+		}
+
+		parser = stlParser()
+		parser.on 'warning', (warning) ->
+			expect(warning).to.equal('Solid and endsolid name do not match')
+
+		asciiStlStream
+			.pipe parser
+			.pipe streamTester
+
+		streamTester.on 'finish', done
 
 
 	it 'Gets next word from internal buffer', () ->
