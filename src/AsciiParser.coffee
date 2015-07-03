@@ -162,6 +162,13 @@ class AsciiParser extends Transform
 					number: @countedFaces + 1
 				}
 				if @last is 'solid'
+					if not @currentModel.name?
+						@currentModel.name = ''
+						@emit(
+							'warning',
+							"Solid in line #{@lineCounter - 1}
+							does not have a name"
+						)
 					if @options.format isnt 'json'
 						@push @currentModel
 				else if @last isnt 'endfacet'

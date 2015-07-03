@@ -14,6 +14,8 @@ expect = chai.expect
 
 models = [
 	'misc/multiWordName'
+	'misc/namelessSolid'
+
 	'polytopes/triangle'
 	'polytopes/tetrahedron'
 	'polytopes/cube'
@@ -105,6 +107,26 @@ describe 'Ascii Parser', ->
 
 		asciiStlStream
 			.pipe stlParser()
+			.pipe streamTester
+
+		streamTester.on 'finish', done
+
+
+	it 'Handles stl-files with a nameless solid', (done) ->
+		asciiStlStream = fs.createReadStream(
+			modelsMap['misc/namelessSolid'].asciiPath
+		)
+		streamTester = new StreamTester {
+			testFirst: (chunk) ->
+				expect(chunk?.name).to.equal ''
+		}
+
+		parser = stlParser()
+		parser.on 'warning', (warning) ->
+			expect(warning).to.equal 'Solid in line 1 does not have a name'
+
+		asciiStlStream
+			.pipe parser
 			.pipe streamTester
 
 		streamTester.on 'finish', done
