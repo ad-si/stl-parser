@@ -170,7 +170,7 @@ class AsciiParser extends Transform
 							does not have a name"
 						)
 					if @options.format isnt 'json'
-						@push @currentModel
+						@push {name: @currentModel.name}
 				else if @last isnt 'endfacet'
 					@emit(
 						'error',
@@ -271,7 +271,10 @@ class AsciiParser extends Transform
 
 			if word is 'endsolid'
 				if @options.format is 'json' or @last is 'solid'
-					@push @currentModel
+					@push {
+						name: @currentModel.name
+						faces: @currentModel.faces
+					}
 
 				if @last is 'endfacet' or @last is 'solid'
 					@currentModel.isClosed = true

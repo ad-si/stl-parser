@@ -290,7 +290,7 @@ unless /^win/.test os.platform
 				(error, stdout, stderr) ->
 					if error then done error
 					if stderr then done stderr
-					expect(stdout.length).to.equal 1476
+					expect(stdout.length).to.equal 1459
 					done()
 			)
 
