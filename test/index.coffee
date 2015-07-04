@@ -25,6 +25,7 @@ models = [
 	'broken/wrongNormals'
 	'broken/incorrectFaceCounter'
 	'broken/solidNameMismatch'
+	'broken/missingEndsolid'
 
 	'objects/gearwheel'
 	'objects/bunny'
@@ -124,6 +125,28 @@ describe 'Ascii Parser', ->
 		parser = stlParser()
 		parser.on 'warning', (warning) ->
 			expect(warning).to.equal 'Solid in line 1 does not have a name'
+
+		asciiStlStream
+			.pipe parser
+			.pipe streamTester
+
+		streamTester.on 'finish', done
+
+
+	it 'Handles stl-files with a missing endsolid keyword', (done) ->
+		asciiStlStream = fs.createReadStream(
+			modelsMap['broken/missingEndsolid'].asciiPath
+		)
+		streamTester = new StreamTester {
+			testFirst: (chunk) ->
+				# expect(chunk?.name).to.equal ''
+		}
+
+		parser = stlParser()
+		parser.on 'error', (error) ->
+			expect(error.message).to.equal(
+				'Provided ascii STL is not closed with endsolid keyword'
+			)
 
 		asciiStlStream
 			.pipe parser
