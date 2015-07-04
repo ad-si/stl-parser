@@ -113,7 +113,7 @@ class BinaryParser extends stream.Transform
 				}
 
 				@currentFace.vertices = []
-				@currentFace.number = @countedFaces
+				@currentFace.number = @countedFaces + 1
 
 				for i in [0..2]
 					@currentFace.vertices.push {
