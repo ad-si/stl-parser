@@ -37,7 +37,7 @@ class AsciiParser extends Transform
 
 
 	_parseCoordinate: (word, type) =>
-		value = false
+		value = null
 
 		try
 			value = toNumber word
@@ -77,6 +77,214 @@ class AsciiParser extends Transform
 
 			return words[0]
 
+	_processWord: (word) ->
+
+		# If statements are sorted descendingly
+		# by relative frequency of the corresponding keyword
+		# in STL-files
+
+		if @last is 'vertex'
+			@currentVertex.x = @_parseCoordinate word, 'vertex-x'
+			return
+
+		if @last is 'vertex-x'
+			@currentVertex.y = @_parseCoordinate word, 'vertex-y'
+			return
+
+		if @last is 'vertex-y'
+			@currentVertex.z = @_parseCoordinate word, 'vertex-z'
+			return
+
+
+		if word is 'vertex'
+			if @last is 'vertex-z' or @last is 'loop'
+				if @last is 'loop'
+					@currentFace.vertices = []
+
+				@currentVertex = {
+					x: null,
+					y: null,
+					z: null
+				}
+				@currentFace.vertices.push @currentVertex
+
+			else
+				@emit(
+					'error',
+					new Error "Unexpected vertex after #{@last}
+					in face #{@currentFace.number} in line #{@lineCounter}"
+				)
+			@last = 'vertex'
+			return
+
+
+		if word is 'facet'
+			@currentFace = {
+				number: @countedFaces + 1
+			}
+			if @last is 'solid'
+				if not @currentModel.name?
+					@currentModel.name = ''
+					@emit(
+						'warning',
+						"Solid in line #{@lineCounter - 1}
+						does not have a name"
+					)
+				if @options.format isnt 'json'
+					@push {name: @currentModel.name}
+			else if @last isnt 'endfacet'
+				@emit(
+					'error',
+					new Error "Unexpected facet after #{@last}
+					in face #{@currentFace.number} in line #{@lineCounter}"
+				)
+
+			@last = 'facet'
+			return
+
+
+		if word is 'normal'
+			if @last is 'facet'
+				@currentFace.normal = {x: null, y: null, z: null}
+			else
+				@emit(
+					'error',
+					new Error "Unexpected normal after #{@last}"
+				)
+
+			@last = 'normal'
+			return
+
+		if @last is 'normal'
+			@currentFace.normal.x = @_parseCoordinate word, 'normal-x'
+			if not @currentFace.normal.x?
+				@currentFace.normal.x = 0
+				@_processWord word
+			return
+
+		if @last is 'normal-x'
+			@currentFace.normal.y = @_parseCoordinate word, 'normal-y'
+			if not @currentFace.normal.y?
+				@currentFace.normal.y = 0
+				@_processWord word
+			return
+
+		if @last is 'normal-y'
+			@currentFace.normal.z = @_parseCoordinate word, 'normal-z'
+			if not @currentFace.normal.z?
+				@currentFace.normal.z = 0
+				@_processWord word
+			return
+
+		if word is 'outer'
+			if @last is 'normal-z'
+				@last = 'outer'
+				return
+			else
+				@emit(
+					'error',
+					new Error "Unexpected outer after #{@last}
+					in face #{@currentFace.number} in line #{@lineCounter}"
+				)
+
+		if word is 'loop'
+			if @last isnt 'outer'
+				@emit(
+					'error',
+					new Error "Unexpected loop after #{@last}
+					in face #{@currentFace.number} in line #{@lineCounter}"
+				)
+
+			@last = 'loop'
+			return
+
+		if word is 'endloop'
+			if @last isnt 'vertex-z'
+				@emit(
+					'error',
+					new Error "Unexpected endloop after #{@last}
+					in face #{@currentFace.number} in line #{@lineCounter}"
+				)
+
+			else if @currentFace.vertices.length isnt 3
+				@emit 'warning', "Face #{@currentFace.number} has
+					#{@currentFace.vertices.length} instead of 3 vertices"
+
+				if @currentFace.vertices.length > 3
+					if @options.discardExcessVertices
+						@currentFace.vertices.splice(3)
+				else
+					@currentFace = null
+
+			@last = 'endloop'
+			return
+
+		if word is 'endfacet'
+			if @last is 'endloop'
+				if @currentFace and @currentFace.vertices
+					@countedFaces++
+					if @options.format is 'json'
+						@currentModel.faces.push @currentFace
+					else
+						@push @currentFace
+			else
+				@emit(
+					'error',
+					new Error "Unexpected endfacet after #{@last}
+					in face #{@currentFace.number} in line #{@lineCounter}"
+				)
+			@last = 'endfacet'
+			return
+
+		if word is 'endsolid'
+			if @options.format is 'json' or @last is 'solid'
+				@push {
+					name: @currentModel.name
+					faces: @currentModel.faces
+				}
+
+			if @last is 'endfacet' or @last is 'solid'
+				@currentModel.isClosed = true
+			else
+				@emit(
+					'error',
+					new Error "Unexpected endsolid after #{@last}
+					in face #{@currentFace.number} in line #{@lineCounter}"
+				)
+
+			if @internalBuffer.trim() is @currentModel.name
+				@push null
+			else
+				@emit 'warning', 'Solid and endsolid name do not match'
+
+			@last = 'endsolid'
+			return
+
+		if word is 'solid'
+			if @last is 'root' or @last is 'endsolid'
+				@currentModel = {
+					name: null
+					isClosed: false
+				}
+				@currentFace = {number: 0}
+				if @options.format is 'json'
+					@currentModel.faces = []
+			else
+				@emit(
+					'error',
+					new Error "Unexpected solid after #{@last}
+					in face #{@currentFace.number} in line #{@lineCounter}"
+				)
+			@last = 'solid'
+			return
+
+		if @last is 'solid'
+			if typeof @currentModel.name is 'string'
+				@currentModel.name += ' ' + word
+			else
+				@currentModel.name = word
+			return
+
 
 	_flush: (done) =>
 		if @countedFaces is 0
@@ -110,209 +318,13 @@ class AsciiParser extends Transform
 		@internalBuffer += chunk.toString()
 
 		while word = @getNextWord()
-
-			# If statements are sorted descendingly
-			# by relative frequency of the corresponding keyword
-			# in STL-files
-
-			if @last is 'vertex'
-				@currentVertex.x = @_parseCoordinate word, 'vertex-x'
-				continue
-
-			if @last is 'vertex-x'
-				@currentVertex.y = @_parseCoordinate word, 'vertex-y'
-				continue
-
-			if @last is 'vertex-y'
-				@currentVertex.z = @_parseCoordinate word, 'vertex-z'
-				continue
-
-
-			if word is 'vertex'
-				if @last is 'vertex-z' or @last is 'loop'
-					if @last is 'loop'
-						@currentFace.vertices = []
-
-					@currentVertex = {
-						x: null,
-						y: null,
-						z: null
-					}
-					@currentFace.vertices?.push @currentVertex
-
-				else
-					@emit(
-						'error',
-						new Error "Unexpected vertex after #{@last}
-						in face #{@currentFace.number} in line #{@lineCounter}"
-					)
-				@last = 'vertex'
-				continue
-
-
-			if word is 'facet'
-				@currentFace = {
-					number: @countedFaces + 1
-				}
-				if @last is 'solid'
-					if not @currentModel.name?
-						@currentModel.name = ''
-						@emit(
-							'warning',
-							"Solid in line #{@lineCounter - 1}
-							does not have a name"
-						)
-					if @options.format isnt 'json'
-						@push {name: @currentModel.name}
-				else if @last isnt 'endfacet'
-					@emit(
-						'error',
-						new Error "Unexpected facet after #{@last}
-						in face #{@currentFace.number} in line #{@lineCounter}"
-					)
-
-				@last = 'facet'
-				continue
-
-
-			if word is 'normal'
-				if @last is 'facet'
-					@currentFace.normal = {x: null, y: null, z: null}
-				else
-					@emit(
-						'error',
-						new Error "Unexpected normal after #{@last}"
-					)
-
-				@last = 'normal'
-				continue
-
-			if @last is 'normal'
-				@currentFace.normal.x = @_parseCoordinate word, 'normal-x'
-				continue
-
-			if @last is 'normal-x'
-				@currentFace.normal.y = @_parseCoordinate word, 'normal-y'
-				continue
-
-			if @last is 'normal-y'
-				@currentFace.normal.z = @_parseCoordinate word, 'normal-z'
-				continue
-
-			if word is 'outer'
-				if @last is 'normal-z'
-					@last = 'outer'
-					continue
-				else
-					@emit(
-						'error',
-						new Error "Unexpected outer after #{@last}
-						in face #{@currentFace.number} in line #{@lineCounter}"
-					)
-
-			if word is 'loop'
-				if @last isnt 'outer'
-					@emit(
-						'error',
-						new Error "Unexpected loop after #{@last}
-						in face #{@currentFace.number} in line #{@lineCounter}"
-					)
-
-				@last = 'loop'
-				continue
-
-			if word is 'endloop'
-				if @last isnt 'vertex-z'
-					@emit(
-						'error',
-						new Error "Unexpected endloop after #{@last}
-						in face #{@currentFace.number} in line #{@lineCounter}"
-					)
-
-				else if @currentFace.vertices and
-				@currentFace.vertices.length isnt 3
-					@emit 'warning', "Face #{@currentFace.number} has
-						#{@currentFace.vertices.length} instead of 3 vertices"
-
-					if @currentFace.vertices.length > 3
-						if @options.discardExcessVertices
-							@currentFace.vertices.splice(3)
-					else
-						@currentFace = null
-
-				@last = 'endloop'
-				continue
-
-			if word is 'endfacet'
-				if @last is 'endloop'
-					if @currentFace and @currentFace.vertices
-						@countedFaces++
-						if @options.format is 'json'
-							@currentModel.faces.push @currentFace
-						else
-							@push @currentFace
-				else
-					@emit(
-						'error',
-						new Error "Unexpected endfacet after #{@last}
-						in face #{@currentFace.number} in line #{@lineCounter}"
-					)
-				@last = 'endfacet'
-				continue
-
-			if word is 'endsolid'
-				if @options.format is 'json' or @last is 'solid'
-					@push {
-						name: @currentModel.name
-						faces: @currentModel.faces
-					}
-
-				if @last is 'endfacet' or @last is 'solid'
-					@currentModel.isClosed = true
-				else
-					@emit(
-						'error',
-						new Error "Unexpected endsolid after #{@last}
-						in face #{@currentFace.number} in line #{@lineCounter}"
-					)
-
-				if @internalBuffer.trim() is @currentModel.name
-					@push null
-				else
-					@emit 'warning', 'Solid and endsolid name do not match'
-
-				@last = 'endsolid'
-				continue
-
-			if word is 'solid'
-				if @last is 'root' or @last is 'endsolid'
-					@currentModel = {
-						name: null
-						isClosed: false
-					}
-					@currentFace = {number: 0}
-					if @options.format is 'json'
-						@currentModel.faces = []
-				else
-					@emit(
-						'error',
-						new Error "Unexpected solid after #{@last}
-						in face #{@currentFace.number} in line #{@lineCounter}"
-					)
-				@last = 'solid'
-				continue
-
-			if @last is 'solid'
-				if typeof @currentModel.name is 'string'
-					@currentModel.name += ' ' + word
-				else
-					@currentModel.name = word
-				continue
+			@_processWord word
 
 		# Make blocking of UI optional (4ms is the minimum value in HTML5)
 		if @options.blocking
 			done()
 		else
 			setTimeout done, 4
+
 
 module.exports = AsciiParser
