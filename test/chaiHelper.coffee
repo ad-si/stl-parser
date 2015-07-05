@@ -8,11 +8,13 @@ module.exports = (chai, utils) ->
 		allTriangles = @_obj.faces.every (face) ->
 			return face.vertices.length is 3
 
+		# coffeelint: disable=no_interpolation_in_single_quotes
 		@assert(
 			allTriangles
 			'expected mesh #{this} to consist only of triangles',
 			'expected mesh #{this} to not consist only of triangles'
 		)
+		# coffeelint: enable=no_interpolation_in_single_quotes
 
 
 	chai.Assertion.addMethod 'equalVector', (vertex) ->
