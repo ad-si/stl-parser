@@ -15,12 +15,12 @@
     "checkStyle": "coffeelint ."
   },
   "devDependencies": {
-    "browserify": "^9.0.8",
-    "chai": "^2.0.0",
+    "browserify": "^10.2.4",
+    "chai": "^3.0.0",
     "coffee-script": "^1.9.0",
     "coffeeify": "^1.0.0",
     "coffeelint": "^1.9.7",
-    "filestream": "^3.0.1",
+    "filestream": "^4.0.0",
     "mocha": "^2.1.0",
     "stl-models": "^0.9.0"
   },
