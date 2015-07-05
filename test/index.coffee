@@ -157,22 +157,24 @@ describe 'Ascii Parser', ->
 		asciiStlStream = fs.createReadStream(
 			modelsMap['broken/missingNormal'].asciiPath
 		)
-		streamTester = new StreamTester()
-
+		numberOfProgressEvents = 0
+		streamTester = new StreamTester {
+			test: -> numberOfProgressEvents++
+		}
 
 		parser = stlParser()
-		parser.on 'warning', console.error
-		parser.on 'error', console.error
-		# parser.on 'error', (error) ->
-		# 	expect(error.message).to.equal(
-		# 		'Provided ascii STL is not closed with endsolid keyword'
-		# 	)
+		parser.on 'error', (error) ->
+			regexString = "^Unexpected 'outer' instead of
+				normal-(x|y|z) value in face 4, line 24$"
+			expect(error.message).to.match new RegExp regexString
 
 		asciiStlStream
 			.pipe parser
 			.pipe streamTester
 
-		streamTester.on 'finish', done
+		streamTester.on 'finish', ->
+			expect(numberOfProgressEvents).to.equal 5
+			done()
 
 
 	it 'Emits a warning at mismatching solid and endsolid names', (done) ->
