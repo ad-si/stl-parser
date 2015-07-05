@@ -26,6 +26,7 @@ models = [
 	'broken/incorrectFaceCounter'
 	'broken/solidNameMismatch'
 	'broken/missingEndsolid'
+	'broken/missingNormal'
 
 	'objects/gearwheel'
 	'objects/bunny'
@@ -144,6 +145,28 @@ describe 'Ascii Parser', ->
 			expect(error.message).to.equal(
 				'Provided ascii STL is not closed with endsolid keyword'
 			)
+
+		asciiStlStream
+			.pipe parser
+			.pipe streamTester
+
+		streamTester.on 'finish', done
+
+
+	it 'Handles stl-files with missing normal coordinates', (done) ->
+		asciiStlStream = fs.createReadStream(
+			modelsMap['broken/missingNormal'].asciiPath
+		)
+		streamTester = new StreamTester()
+
+
+		parser = stlParser()
+		parser.on 'warning', console.error
+		parser.on 'error', console.error
+		# parser.on 'error', (error) ->
+		# 	expect(error.message).to.equal(
+		# 		'Provided ascii STL is not closed with endsolid keyword'
+		# 	)
 
 		asciiStlStream
 			.pipe parser

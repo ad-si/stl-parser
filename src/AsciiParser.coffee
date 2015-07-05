@@ -36,6 +36,23 @@ class AsciiParser extends Transform
 		@characterCounter = 0
 
 
+	_parseCoordinate: (word, type) =>
+		value = false
+
+		try
+			value = toNumber word
+
+		catch error
+			@emit(
+				'error',
+				new Error "Unexpected '#{word}' instead of #{type} value
+				in face #{@currentFace.number}, line #{@lineCounter}"
+			)
+
+		@last = type
+		return value
+
+
 	getNextWord: () =>
 		if /^\s*\n\s*/gi.test @internalBuffer
 			@lineCounter++
@@ -99,39 +116,15 @@ class AsciiParser extends Transform
 			# in STL-files
 
 			if @last is 'vertex'
-				try
-					@currentVertex.x = toNumber word
-				catch error
-					@emit(
-						'error',
-						new Error "Unexpected '#{word}' instead of vertex x-value
-						in face #{@currentFace.number}, line #{@lineCounter}"
-					)
-				@last = 'vertex-x'
+				@currentVertex.x = @_parseCoordinate word, 'vertex-x'
 				continue
 
 			if @last is 'vertex-x'
-				try
-					@currentVertex.y = toNumber word
-				catch error
-					@emit(
-						'error',
-						new Error "Unexpected '#{word}' instead of vertex y-value
-						in face #{@currentFace.number}, line #{@lineCounter}"
-					)
-				@last = 'vertex-y'
+				@currentVertex.y = @_parseCoordinate word, 'vertex-y'
 				continue
 
 			if @last is 'vertex-y'
-				try
-					@currentVertex.z = toNumber word
-				catch error
-					@emit(
-						'error',
-						new Error "Unexpected '#{word}' instead of vertex z-value
-						in face #{@currentFace.number}, line #{@lineCounter}"
-					)
-				@last = 'vertex-z'
+				@currentVertex.z = @_parseCoordinate word, 'vertex-z'
 				continue
 
 
@@ -145,7 +138,7 @@ class AsciiParser extends Transform
 						y: null,
 						z: null
 					}
-					@currentFace.vertices.push @currentVertex
+					@currentFace.vertices?.push @currentVertex
 
 				else
 					@emit(
@@ -195,18 +188,15 @@ class AsciiParser extends Transform
 				continue
 
 			if @last is 'normal'
-				@currentFace.normal.x = Number word
-				@last = 'normal-x'
+				@currentFace.normal.x = @_parseCoordinate word, 'normal-x'
 				continue
 
 			if @last is 'normal-x'
-				@currentFace.normal.y = Number word
-				@last = 'normal-y'
+				@currentFace.normal.y = @_parseCoordinate word, 'normal-y'
 				continue
 
 			if @last is 'normal-y'
-				@currentFace.normal.z = Number word
-				@last = 'normal-z'
+				@currentFace.normal.z = @_parseCoordinate word, 'normal-z'
 				continue
 
 			if word is 'outer'
@@ -239,7 +229,8 @@ class AsciiParser extends Transform
 						in face #{@currentFace.number} in line #{@lineCounter}"
 					)
 
-				else if @currentFace.vertices.length isnt 3
+				else if @currentFace.vertices and
+				@currentFace.vertices.length isnt 3
 					@emit 'warning', "Face #{@currentFace.number} has
 						#{@currentFace.vertices.length} instead of 3 vertices"
 
