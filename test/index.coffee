@@ -137,10 +137,7 @@ describe 'Ascii Parser', ->
 		asciiStlStream = fs.createReadStream(
 			modelsMap['broken/missingEndsolid'].asciiPath
 		)
-		streamTester = new StreamTester {
-			testFirst: (chunk) ->
-				# expect(chunk?.name).to.equal ''
-		}
+		streamTester = new StreamTester()
 
 		parser = stlParser()
 		parser.on 'error', (error) ->
