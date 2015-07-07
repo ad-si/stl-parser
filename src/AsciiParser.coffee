@@ -288,7 +288,7 @@ class AsciiParser extends Transform
 
 	_flush: (done) =>
 		if @countedFaces is 0
-			if @currentModel.name.length > 50
+			if @currentModel.name?.length > 50
 				@currentModel.name = @currentModel.name.substr(0,50) + '…'
 			@emit(
 				'warning',
