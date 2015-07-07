@@ -23,6 +23,7 @@ models = [
 	'broken/fourVertices'
 	'broken/twoVertices'
 	'broken/wrongNormals'
+	'broken/wrongHeader'
 	'broken/incorrectFaceCounter'
 	'broken/solidNameMismatch'
 	'broken/missingEndsolid'
@@ -191,6 +192,32 @@ describe 'Ascii Parser', ->
 			expect(warning).to.equal('Solid and endsolid name do not match')
 
 		asciiStlStream
+			.pipe parser
+			.pipe streamTester
+
+		streamTester.on 'finish', done
+
+
+	it 'Emits a warning if an ascii-stl can probably be parsed
+	 	as a binary-stl', (done) ->
+		stlStream = fs.createReadStream(
+			modelsMap['broken/wrongHeader'].binaryPath
+		)
+		streamTester = new StreamTester()
+
+		parser = stlParser()
+		parser.on 'warning', (warning) ->
+			expect(warning).to.match new RegExp(
+				'^(Solid \'null\' does not contain any faces)|' +
+				'(Provided ascii STL should probably be parsed ' +
+				'as a binary STL)$'
+			)
+		parser.on 'error', (error) ->
+			expect(error.message).to.equal(
+				'Provided ascii STL contains an invalid solid'
+			)
+
+		stlStream
 			.pipe parser
 			.pipe streamTester
 
