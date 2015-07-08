@@ -28,6 +28,7 @@ models = [
 	'broken/solidNameMismatch'
 	'broken/missingEndsolid'
 	'broken/missingNormal'
+	'broken/notANumberNormal'
 
 	'objects/gearwheel'
 	'objects/bunny'
@@ -164,10 +165,34 @@ describe 'Ascii Parser', ->
 		}
 
 		parser = stlParser()
-		parser.on 'error', (error) ->
+		parser.on 'warning', (warning) ->
 			regexString = "^Unexpected 'outer' instead of
 				normal-(x|y|z) value in face 4, line 24$"
-			expect(error.message).to.match new RegExp regexString
+			expect(warning).to.match new RegExp regexString
+
+		asciiStlStream
+			.pipe parser
+			.pipe streamTester
+
+		streamTester.on 'finish', ->
+			expect(numberOfProgressEvents).to.equal 5
+			done()
+
+
+	it 'Handles stl-files with NaN normal coordinates', (done) ->
+		asciiStlStream = fs.createReadStream(
+			modelsMap['broken/notANumberNormal'].asciiPath
+		)
+		numberOfProgressEvents = 0
+		streamTester = new StreamTester {
+			test: -> numberOfProgressEvents++
+		}
+
+		parser = stlParser()
+		parser.on 'warning', (warning) ->
+			regexString = "^Unexpected 'NaN' instead of
+				normal-(x|y|z) value in face 2, line 9$"
+			expect(warning).to.match new RegExp regexString
 
 		asciiStlStream
 			.pipe parser
