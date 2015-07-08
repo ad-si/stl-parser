@@ -44,8 +44,8 @@ class AsciiParser extends Transform
 
 		catch error
 			@emit(
-				'error',
-				new Error "Unexpected '#{word}' instead of #{type} value
+				'warning',
+				"Unexpected '#{word}' instead of #{type} value
 				in face #{@currentFace.number}, line #{@lineCounter}"
 			)
 
