@@ -25,6 +25,7 @@ class AsciiParser extends Transform
 		@last = 'root'
 		@currentModel = {
 			name: null
+			endName: null
 			isClosed: false
 		}
 		@currentFace = {
@@ -66,6 +67,8 @@ class AsciiParser extends Transform
 		words = @internalBuffer.match /^\S+/
 
 		if (words is null) or (words[0].length is @internalBuffer.length)
+			if @internalBuffer is ''
+				@push null
 			return null
 		else
 			@characterCounter += words[0].length
@@ -251,11 +254,6 @@ class AsciiParser extends Transform
 					in face #{@currentFace.number} in line #{@lineCounter}"
 				)
 
-			if @internalBuffer.trim() is @currentModel.name
-				@push null
-			else
-				@emit 'warning', 'Solid and endsolid name do not match'
-
 			@last = 'endsolid'
 			return
 
@@ -263,6 +261,7 @@ class AsciiParser extends Transform
 			if @last is 'root' or @last is 'endsolid'
 				@currentModel = {
 					name: null
+					endName: null
 					isClosed: false
 				}
 				@currentFace = {number: 0}
@@ -283,6 +282,12 @@ class AsciiParser extends Transform
 			else
 				@currentModel.name = word
 			return
+
+		if @last is 'endsolid'
+			if typeof @currentModel.endName is 'string'
+				@currentModel.endName += ' ' + word
+			else
+				@currentModel.endName = word
 
 
 	_flush: (done) =>
