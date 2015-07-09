@@ -112,8 +112,8 @@ class AsciiParser extends Transform
 
 			else
 				@emit(
-					'error',
-					new Error "Unexpected vertex after #{@last}
+					'warning',
+					"Unexpected vertex after #{@last}
 					in face #{@currentFace.number} in line #{@lineCounter}"
 				)
 			@last = 'vertex'
@@ -134,10 +134,11 @@ class AsciiParser extends Transform
 					)
 				if @options.format isnt 'json'
 					@push {name: @currentModel.name}
+
 			else if @last isnt 'endfacet'
 				@emit(
-					'error',
-					new Error "Unexpected facet after #{@last}
+					'warning',
+					"Unexpected facet after #{@last}
 					in face #{@currentFace.number} in line #{@lineCounter}"
 				)
 
@@ -150,8 +151,8 @@ class AsciiParser extends Transform
 				@currentFace.normal = {x: null, y: null, z: null}
 			else
 				@emit(
-					'error',
-					new Error "Unexpected normal after #{@last}"
+					'warning',
+					"Unexpected normal after #{@last}"
 				)
 
 			@last = 'normal'
@@ -184,16 +185,16 @@ class AsciiParser extends Transform
 				return
 			else
 				@emit(
-					'error',
-					new Error "Unexpected outer after #{@last}
+					'warning',
+					"Unexpected outer after #{@last}
 					in face #{@currentFace.number} in line #{@lineCounter}"
 				)
 
 		if word is 'loop'
 			if @last isnt 'outer'
 				@emit(
-					'error',
-					new Error "Unexpected loop after #{@last}
+					'warning',
+					"Unexpected loop after #{@last}
 					in face #{@currentFace.number} in line #{@lineCounter}"
 				)
 
@@ -203,8 +204,8 @@ class AsciiParser extends Transform
 		if word is 'endloop'
 			if @last isnt 'vertex-z'
 				@emit(
-					'error',
-					new Error "Unexpected endloop after #{@last}
+					'warning',
+					"Unexpected endloop after #{@last}
 					in face #{@currentFace.number} in line #{@lineCounter}"
 				)
 
@@ -231,8 +232,8 @@ class AsciiParser extends Transform
 						@push @currentFace
 			else
 				@emit(
-					'error',
-					new Error "Unexpected endfacet after #{@last}
+					'warning',
+					"Unexpected endfacet after #{@last}
 					in face #{@currentFace.number} in line #{@lineCounter}"
 				)
 			@last = 'endfacet'
@@ -249,8 +250,8 @@ class AsciiParser extends Transform
 				@currentModel.isClosed = true
 			else
 				@emit(
-					'error',
-					new Error "Unexpected endsolid after #{@last}
+					'warning',
+					"Unexpected endsolid after #{@last}
 					in face #{@currentFace.number} in line #{@lineCounter}"
 				)
 
@@ -269,8 +270,8 @@ class AsciiParser extends Transform
 					@currentModel.faces = []
 			else
 				@emit(
-					'error',
-					new Error "Unexpected solid after #{@last}
+					'warning',
+					"Unexpected solid after #{@last}
 					in face #{@currentFace.number} in line #{@lineCounter}"
 				)
 			@last = 'solid'
