@@ -329,6 +329,14 @@ class AsciiParser extends Transform
 		done()
 
 
+	_callAtEnd: (done) ->
+		# Make blocking of UI optional (4ms is the minimum value in HTML5)
+		if @options.blocking
+			done()
+		else
+			setTimeout done, 4
+
+
 	_transform: (chunk, encoding, done) =>
 
 		@internalBuffer += chunk.toString()
@@ -336,11 +344,7 @@ class AsciiParser extends Transform
 		while word = @getNextWord()
 			@_processWord word
 
-		# Make blocking of UI optional (4ms is the minimum value in HTML5)
-		if @options.blocking
-			done()
-		else
-			setTimeout done, 4
+		@_callAtEnd done
 
 
 module.exports = AsciiParser
