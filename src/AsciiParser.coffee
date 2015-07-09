@@ -291,20 +291,31 @@ class AsciiParser extends Transform
 
 
 	_flush: (done) =>
+		if not @currentModel.isClosed and
+		@countedFaces is 0 and
+		@currentModel.name is null and
+		@currentModel.endName is null
+			@emit(
+				'warning',
+				'Provided ascii STL should
+				probably be parsed as a binary STL'
+			)
+
+		if Boolean(@currentModel.endName) isnt Boolean(@currentModel.name)
+			@emit 'warning',
+				"Solid name (\"#{@currentModel.name}\")
+				and endsolid name (\"#{@currentModel.endName}\") do not match"
+
 		if @countedFaces is 0
 			if @currentModel.name?.length > 50
 				@currentModel.name = @currentModel.name.substr(0,50) + '…'
 			@emit(
 				'warning',
-				"Solid '#{@currentModel.name}'
-				does not contain any faces"
-			)
-
-		if not @currentModel.isClosed and @countedFaces is 0
-			@emit(
-				'warning',
-				'Provided ascii STL should
-				probably be parsed as a binary STL'
+				'Solid ' +
+				(if @currentModel.name
+				then "'#{@currentModel.name}'"
+				else '<no name>') +
+				' does not contain any faces'
 			)
 
 		if @currentModel.name is null

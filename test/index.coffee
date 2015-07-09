@@ -214,7 +214,10 @@ describe 'Ascii Parser', ->
 
 		parser = stlParser()
 		parser.on 'warning', (warning) ->
-			expect(warning).to.equal('Solid and endsolid name do not match')
+			expect(warning).to.equal(
+				'Solid name ("tetrahedron") and endsolid name
+				("anything but tetrahedron") do not match'
+			)
 
 		asciiStlStream
 			.pipe parser
@@ -233,7 +236,7 @@ describe 'Ascii Parser', ->
 		parser = stlParser()
 		parser.on 'warning', (warning) ->
 			expect(warning).to.match new RegExp(
-				'^(Solid \'null\' does not contain any faces)|' +
+				'^(Solid <no name> does not contain any faces)|' +
 				'(Provided ascii STL should probably be parsed ' +
 				'as a binary STL)$'
 			)
@@ -307,21 +310,23 @@ describe 'Ascii Parser', ->
 		filePath = modelsMap['polytopes/cube'].asciiPath
 		fileStats = fs.statSync filePath
 		asciiStlStream = fs.createReadStream filePath
-		streamTester = new StreamTester()
 		numberOfProgressEvents = 0
 
 		parser = stlParser {size: fileStats.size}
-		parser.on 'progress', (progress) ->
-			expect(progress).to.be.within 0, 1
-			numberOfProgressEvents++
+		parser
+			.on 'progress', (progress) ->
+				expect(progress).to.be.within 0, 1
+				numberOfProgressEvents++
+			.on 'finish', ->
+				expect(numberOfProgressEvents).to.equal 257
+
+		streamTester = new StreamTester()
+		streamTester.on 'finish', done
 
 		asciiStlStream
 			.pipe parser
 			.pipe streamTester
 
-		streamTester.on 'finish', ->
-			expect(numberOfProgressEvents).to.equal 257
-			done()
 
 
 describe 'Binary Parser', ->
