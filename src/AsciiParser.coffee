@@ -66,7 +66,6 @@ class AsciiParser extends Transform
 		words = @internalBuffer.match /^\S+/
 
 		if (words is null) or (words[0].length is @internalBuffer.length)
-			@emit 'progress', 1
 			return null
 		else
 			@characterCounter += words[0].length
@@ -310,6 +309,7 @@ class AsciiParser extends Transform
 			return done new Error 'Provided ascii STL is not
 				closed with endsolid keyword'
 
+		@emit 'progress', 1
 		done()
 
 
