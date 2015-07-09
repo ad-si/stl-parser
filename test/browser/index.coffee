@@ -77,6 +77,9 @@ loadStreamed = (changeEvent) ->
 			new Date() - startTime
 		)
 
+	streamingStlParser.on 'warning', console.error
+	streamingStlParser.on 'error', console.error
+
 
 	fileStream.on 'error', (error) ->
 		throw error
