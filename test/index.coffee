@@ -327,6 +327,14 @@ describe 'Ascii Parser', ->
 			.pipe parser
 			.pipe streamTester
 
+	it 'Emits a header which contains a field "type" set to "ascii"', (done) ->
+		asciiStl = fs.readFileSync(
+			modelsMap['polytopes/tetrahedron'].asciiPath
+		)
+
+		stlParser(asciiStl).on 'data', (asciiData) ->
+			expect(asciiData.type).to.equal('ascii')
+			done()
 
 
 describe 'Binary Parser', ->
@@ -367,6 +375,14 @@ describe 'Binary Parser', ->
 			.on 'data', (data) ->
 				done()
 
+	it 'Emit a header which contains a field "type" set to "binary"', (done) ->
+		binaryStl = fs.readFileSync(
+			modelsMap['polytopes/tetrahedron'].binaryPath
+		)
+
+		stlParser(binaryStl).on 'data', (binaryData) ->
+			expect(binaryData.type).to.equal('binary')
+			done()
 
 describe 'STL Parser', ->
 	it 'Ascii & binary stl have equal faces (maximum delta: 0.00001)', (done) ->
@@ -392,7 +408,7 @@ unless /^win/.test os.platform
 				(error, stdout, stderr) ->
 					if error then done error
 					if stderr then done stderr
-					expect(stdout.length).to.equal 1459
+					expect(stdout.length).to.equal 1474
 					done()
 			)
 
@@ -405,6 +421,6 @@ unless /^win/.test os.platform
 				(error, stdout, stderr) ->
 					if error then done error
 					if stderr then done stderr
-					expect(stdout.length).to.equal 1642
+					expect(stdout.length).to.equal 1658
 					done()
 			)
