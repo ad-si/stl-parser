@@ -1,3 +1,5 @@
+assign = Object.assign || require 'object.assign'
+
 util = require 'util'
 stream = require 'stream'
 
@@ -23,11 +25,13 @@ class AsciiParser extends Transform
 		@debugBuffer = ''
 		@internalBuffer = ''
 		@last = 'root'
-		@currentModel = {
+		@defaultModel = {
 			name: null
+			type: 'ascii'
 			endName: null
 			isClosed: false
 		}
+		@currentModel = assign {}, @defaultModel
 		@currentFace = {
 			number: 0
 		}
@@ -133,7 +137,10 @@ class AsciiParser extends Transform
 						does not have a name"
 					)
 				if @options.format isnt 'json'
-					@push {name: @currentModel.name}
+					@push {
+						name: @currentModel.name,
+						type: @currentModel.type
+					}
 
 			else if @last isnt 'endfacet'
 				@emit(
@@ -243,6 +250,7 @@ class AsciiParser extends Transform
 			if @options.format is 'json' or @last is 'solid'
 				@push {
 					name: @currentModel.name
+					type: @currentModel.type
 					faces: @currentModel.faces
 				}
 
@@ -260,11 +268,7 @@ class AsciiParser extends Transform
 
 		if word is 'solid'
 			if @last is 'root' or @last is 'endsolid'
-				@currentModel = {
-					name: null
-					endName: null
-					isClosed: false
-				}
+				@currentModel = assign {}, @defaultModel
 				@currentFace = {number: 0}
 				if @options.format is 'json'
 					@currentModel.faces = []
