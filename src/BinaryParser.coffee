@@ -23,7 +23,11 @@ class BinaryParser extends stream.Transform
 		@faceCounter = 0
 		@countedFaces = 0
 		@cursor = 80
-		@currentModel = {}
+		@currentModel = {
+			name: null
+			type: 'binary'
+			faceCount: null
+		}
 		@currentFace = {}
 
 		# File-structure:
