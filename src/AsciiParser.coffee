@@ -308,7 +308,7 @@ class AsciiParser extends Transform
 
 		if Boolean(@currentModel.endName) isnt Boolean(@currentModel.name)
 			@emit 'warning',
-				"Solid name (\"#{@currentModel.name}\")
+				"Solid name (\"#{@currentModel.name.substr(0,50)}\")
 				and endsolid name (\"#{@currentModel.endName}\") do not match"
 
 		if @countedFaces is 0
