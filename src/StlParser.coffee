@@ -39,8 +39,7 @@ class StlParser extends stream.Transform
 				if @options.readableObjectMode
 					@push data
 				else
-					@push JSON.stringify data
-					@push '\n'
+					@push JSON.stringify(data) + '\n'
 
 			@parser.on 'end', () =>
 				@push null
