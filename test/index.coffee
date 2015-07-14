@@ -52,28 +52,31 @@ modelsMap = models.reduce (previous, current, index) ->
 class StreamTester extends stream.Writable
 	constructor: (@options = {}) ->
 		@firstCall = true
+		@secondCall = true
 		@options.objectMode = true
 		super @options
 
 	_write: (chunk, encoding, done) ->
-
 		if @options.test
-			@options.test(chunk)
+			@options.test chunk
 
-		if @options.testFirst and @firstCall is true
-			@options.testFirst(chunk)
+		if @firstCall
+			expect chunk
+				.to.be.an('object')
+				.and.to.have.ownProperty('type')
 			@firstCall = false
 
+		else if @secondCall
+			expect chunk
+				.to.be.an('object')
+				.and.to.have.ownProperty('name')
+			@secondCall = false
+
 		else
-			if @firstCall
-				expect(chunk)
-					.to.be.an('object')
-					.and.to.have.ownProperty('name')
-				@firstCall = false
-			else
-				expect(chunk)
-					.to.be.a('object')
-					.and.to.contain.all.keys(['vertices', 'normal'])
+			expect chunk
+				.to.be.a('object')
+				.and.to.contain.all.keys(['vertices', 'normal'])
+
 		done()
 
 
@@ -105,8 +108,10 @@ describe 'Ascii Parser', ->
 			modelsMap['misc/multiWordName'].asciiPath
 		)
 		streamTester = new StreamTester {
-			testFirst: (chunk) ->
-				expect(chunk?.name).to.equal 'Model with a multi word name'
+			test: (chunk) ->
+				if chunk.name?
+					expect chunk.name
+					.to.equal 'Model with a multi word name'
 		}
 
 		asciiStlStream
@@ -121,8 +126,10 @@ describe 'Ascii Parser', ->
 			modelsMap['misc/namelessSolid'].asciiPath
 		)
 		streamTester = new StreamTester {
-			testFirst: (chunk) ->
-				expect(chunk?.name).to.equal ''
+			test: (chunk) ->
+				if chunk.name
+					expect chunk?.name
+					.to.equal ''
 		}
 
 		parser = stlParser()
@@ -159,9 +166,9 @@ describe 'Ascii Parser', ->
 		asciiStlStream = fs.createReadStream(
 			modelsMap['broken/missingNormal'].asciiPath
 		)
-		numberOfProgressEvents = 0
+		numberOfEvents = 0
 		streamTester = new StreamTester {
-			test: -> numberOfProgressEvents++
+			test: -> numberOfEvents++
 		}
 
 		parser = stlParser()
@@ -175,7 +182,7 @@ describe 'Ascii Parser', ->
 			.pipe streamTester
 
 		streamTester.on 'finish', ->
-			expect(numberOfProgressEvents).to.equal 5
+			expect(numberOfEvents).to.equal 6
 			done()
 
 
@@ -183,9 +190,9 @@ describe 'Ascii Parser', ->
 		asciiStlStream = fs.createReadStream(
 			modelsMap['broken/notANumberNormal'].asciiPath
 		)
-		numberOfProgressEvents = 0
+		numberOfEvents = 0
 		streamTester = new StreamTester {
-			test: -> numberOfProgressEvents++
+			test: -> numberOfEvents++
 		}
 
 		parser = stlParser()
@@ -199,7 +206,7 @@ describe 'Ascii Parser', ->
 			.pipe streamTester
 
 		streamTester.on 'finish', ->
-			expect(numberOfProgressEvents).to.equal 5
+			expect(numberOfEvents).to.equal 6
 			done()
 
 
@@ -208,8 +215,9 @@ describe 'Ascii Parser', ->
 			modelsMap['broken/solidNameMismatch'].asciiPath
 		)
 		streamTester = new StreamTester {
-			testFirst: (chunk) ->
-				expect(chunk?.name).to.equal 'tetrahedron'
+			test: (chunk) ->
+				if chunk.name?
+					expect(chunk.name).to.equal 'tetrahedron'
 		}
 
 		parser = stlParser()
@@ -408,7 +416,7 @@ unless /^win/.test os.platform
 				(error, stdout, stderr) ->
 					if error then done error
 					if stderr then done stderr
-					expect(stdout.length).to.equal 1474
+					expect(stdout.length).to.equal 1476
 					done()
 			)
 
@@ -421,6 +429,6 @@ unless /^win/.test os.platform
 				(error, stdout, stderr) ->
 					if error then done error
 					if stderr then done stderr
-					expect(stdout.length).to.equal 1658
+					expect(stdout.length).to.equal 1660
 					done()
 			)

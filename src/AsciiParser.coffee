@@ -27,7 +27,6 @@ class AsciiParser extends Transform
 		@last = 'root'
 		@defaultModel = {
 			name: null
-			type: 'ascii'
 			endName: null
 			isClosed: false
 		}
@@ -138,8 +137,7 @@ class AsciiParser extends Transform
 					)
 				if @options.format isnt 'json'
 					@push {
-						name: @currentModel.name,
-						type: @currentModel.type
+						name: @currentModel.name
 					}
 
 			else if @last isnt 'endfacet'
@@ -250,7 +248,7 @@ class AsciiParser extends Transform
 			if @options.format is 'json' or @last is 'solid'
 				@push {
 					name: @currentModel.name
-					type: @currentModel.type
+					type: 'ascii',
 					faces: @currentModel.faces
 				}
 

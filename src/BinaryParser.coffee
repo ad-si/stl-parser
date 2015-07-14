@@ -25,7 +25,6 @@ class BinaryParser extends stream.Transform
 		@cursor = 80
 		@currentModel = {
 			name: null
-			type: 'binary'
 			faceCount: null
 		}
 		@currentFace = {}
@@ -66,6 +65,7 @@ class BinaryParser extends stream.Transform
 				counted number of faces (#{@countedFaces}) do not match"
 
 		if @options.format is 'json'
+			@currentModel.type = 'binary'
 			@push @currentModel
 			done null, @internalBuffer
 		else

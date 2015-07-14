@@ -32,8 +32,20 @@ class StlParser extends stream.Transform
 			if (@options.type isnt 'binary' and chunk.toString().startsWith(
 				'solid')) or @options.type is 'ascii'
 				@parser = new AsciiParser clone @options
+				if @options.format isnt 'json'
+					@push(
+						if @options.readableObjectMode
+						then  {type: 'ascii'}
+						else  JSON.stringify(type: 'ascii') + '\n'
+					)
 			else
 				@parser = new BinaryParser clone @options
+				if @options.format isnt 'json'
+					@push(
+						if @options.readableObjectMode
+						then  {type: 'ascii'}
+						else  JSON.stringify(type: 'binary') + '\n'
+					)
 
 			@parser.on 'data', (data) =>
 				if @options.readableObjectMode
