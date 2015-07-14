@@ -43,7 +43,7 @@ class StlParser extends stream.Transform
 				if @options.format isnt 'json'
 					@push(
 						if @options.readableObjectMode
-						then  {type: 'ascii'}
+						then  {type: 'binary'}
 						else  JSON.stringify(type: 'binary') + '\n'
 					)
 
