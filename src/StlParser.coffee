@@ -35,16 +35,16 @@ class StlParser extends stream.Transform
 				if @options.format isnt 'json'
 					@push(
 						if @options.readableObjectMode
-						then  {type: 'ascii'}
-						else  JSON.stringify(type: 'ascii') + '\n'
+						then {type: 'ascii'}
+						else JSON.stringify(type: 'ascii') + '\n'
 					)
 			else
 				@parser = new BinaryParser clone @options
 				if @options.format isnt 'json'
 					@push(
 						if @options.readableObjectMode
-						then  {type: 'binary'}
-						else  JSON.stringify(type: 'binary') + '\n'
+						then {type: 'binary'}
+						else JSON.stringify(type: 'binary') + '\n'
 					)
 
 			@parser.on 'data', (data) =>
