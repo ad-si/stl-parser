@@ -414,8 +414,8 @@ unless /^win/.test os.platform
 			childProcess.exec(
 				"#{__dirname + path.sep}cli.coffee < #{filePath}",
 				(error, stdout, stderr) ->
-					if error then done error
-					if stderr then done stderr
+					if error then return done error
+					if stderr then return done stderr
 					expect(stdout.length).to.equal 1476
 					done()
 			)
@@ -427,8 +427,8 @@ unless /^win/.test os.platform
 			childProcess.exec(
 				"#{__dirname + path.sep}cli.coffee < #{filePath}",
 				(error, stdout, stderr) ->
-					if error then done error
-					if stderr then done stderr
+					if error then return done error
+					if stderr then return done stderr
 					expect(stdout.length).to.equal 1660
 					done()
 			)
