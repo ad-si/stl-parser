@@ -70,8 +70,6 @@ class AsciiParser extends Transform
 		words = @internalBuffer.match /^\S+/
 
 		if (words is null) or (words[0].length is @internalBuffer.length)
-			if @internalBuffer is ''
-				@push null
 			return null
 		else
 			@characterCounter += words[0].length
