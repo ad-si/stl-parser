@@ -412,7 +412,7 @@ unless /^win/.test os.platform
 			filePath = modelsMap['polytopes/cube'].asciiPath
 
 			childProcess.exec(
-				"cat #{filePath} | #{__dirname + path.sep}cli.coffee",
+				"#{__dirname + path.sep}cli.coffee < #{filePath}",
 				(error, stdout, stderr) ->
 					if error then done error
 					if stderr then done stderr
@@ -425,7 +425,7 @@ unless /^win/.test os.platform
 			filePath = modelsMap['polytopes/cube'].binaryPath
 
 			childProcess.exec(
-				"cat #{filePath} | #{__dirname + path.sep}cli.coffee",
+				"#{__dirname + path.sep}cli.coffee < #{filePath}",
 				(error, stdout, stderr) ->
 					if error then done error
 					if stderr then done stderr
