@@ -344,6 +344,21 @@ describe 'Ascii Parser', ->
 			expect(asciiData.type).to.equal('ascii')
 			done()
 
+	it 'Can pipe large files into a file write-stream', (done) ->
+
+		@timeout '10s'
+
+		parser = stlParser {readableObjectMode: false}
+		fileWriteStream = fs.createWriteStream 'test/temp.jsonl'
+		fileWriteStream.on 'finish', ->
+			fs.unlinkSync 'test/temp.jsonl'
+			done()
+
+		fs
+			.createReadStream modelsMap['objects/bunny'].asciiPath
+			.pipe parser
+			.pipe fileWriteStream
+
 
 describe 'Binary Parser', ->
 	it 'Transforms stl-stream to jsonl stream', (done) ->
@@ -417,6 +432,17 @@ unless /^win/.test os.platform
 					if error then return done error
 					if stderr then return done stderr
 					expect(stdout.length).to.equal 1476
+					done()
+			)
+
+		it 'Pipes an large ascii-stl file into a file-stream', (done) ->
+			filePath = modelsMap['objects/bunny'].asciiPath
+
+			childProcess.exec(
+				"#{__dirname + path.sep}cli.coffee < #{filePath}",
+				(error, stdout, stderr) ->
+					#if error then return done error
+					if stderr then return done new Error stderr
 					done()
 			)
 
