@@ -7,7 +7,7 @@ streamedContainer = document.getElementById('streamedLoading')
 progressBar = document.querySelector 'progress'
 
 getFinishString = (modelName, fileName, endTime) ->
-	return "✔ Loaded model \"#{modelName}\"
+	return "✔ Parsed and loaded model \"#{modelName}\"
 	from file \"#{fileName}\"
 	in #{endTime} ms"
 
@@ -32,14 +32,22 @@ loadBuffered = (changeEvent) ->
 	reader = new FileReader
 
 	reader.addEventListener 'load', (event) ->
-		stlParser(event.target.result).on 'data', (data) ->
-			bufferedContainer
-			.querySelector('p')
-			.textContent = getFinishString(
-				data.name
-				files[0].name
-				new Date() - startTime
-			)
+		bufferedContainer
+		.querySelector('p')
+		.textContent = "✔ Loaded file #{files[0].name}
+			in #{new Date() - startTime} ms"
+
+		parse = () ->
+			stlParser(event.target.result).on 'data', (data) ->
+				bufferedContainer
+				.querySelector('p')
+				.textContent = getFinishString(
+					data.name
+					files[0].name
+					new Date() - startTime
+				)
+
+		setTimeout parse
 
 	reader.readAsArrayBuffer files[0]
 
