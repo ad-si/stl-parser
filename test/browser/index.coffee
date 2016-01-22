@@ -60,13 +60,15 @@ loadStreamed = (changeEvent) ->
 	files = changeEvent.target.files
 	checkFilesCount files
 
-	streamingStlParser = stlParser {blocking: false}
-	fileStream = new ReadableFileStream files[0]
-
 	faceCounter = 0
 	averageFaceSize = 240 # Byte
 	modelName = ''
 
+	fileStream = new ReadableFileStream files[0]
+	fileStream.on 'error', (error) ->
+		throw error
+
+	streamingStlParser = stlParser {blocking: false}
 	streamingStlParser.on 'data', (data) ->
 		if not data.number?
 			faceCounter =
@@ -87,10 +89,6 @@ loadStreamed = (changeEvent) ->
 
 	streamingStlParser.on 'warning', console.error
 	streamingStlParser.on 'error', console.error
-
-
-	fileStream.on 'error', (error) ->
-		throw error
 
 	startTime = new Date()
 	fileStream.pipe streamingStlParser
