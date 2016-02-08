@@ -1,6 +1,3 @@
-require 'string.prototype.startswith'
-require 'string.prototype.includes'
-
 util = require 'util'
 
 Vector = require './Vector'

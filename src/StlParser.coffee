@@ -1,5 +1,3 @@
-require 'string.prototype.startswith'
-
 stream = require 'stream'
 clone = require 'clone'
 

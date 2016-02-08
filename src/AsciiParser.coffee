@@ -1,5 +1,3 @@
-assign = Object.assign || require 'object.assign'
-
 util = require 'util'
 stream = require 'stream'
 
@@ -30,7 +28,7 @@ class AsciiParser extends Transform
 			endName: null
 			isClosed: false
 		}
-		@currentModel = assign {}, @defaultModel
+		@currentModel = Object.assign {}, @defaultModel
 		@currentFace = {
 			number: 0
 		}
@@ -264,7 +262,7 @@ class AsciiParser extends Transform
 
 		if word is 'solid'
 			if @last is 'root' or @last is 'endsolid'
-				@currentModel = assign {}, @defaultModel
+				@currentModel = Object.assign {}, @defaultModel
 				@currentFace = {number: 0}
 				if @options.format is 'json'
 					@currentModel.faces = []
