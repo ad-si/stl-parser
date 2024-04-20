@@ -1,2 +1,2 @@
-/test/browser/bundle.js
+*.js
 /build
