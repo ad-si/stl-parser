@@ -1,10 +1,19 @@
+.PHONY: help
+help: makefile
+	@tail -n +4 makefile | grep ".PHONY"
+
+
+node_modules: package.json bun.lock
+	if test ! -d $@; then npm install --force; fi
+
+
 .PHONY: build
-build:
-	bun x tsc
+build: node_modules
+	bunx tsc
 
 
 .PHONY: test
-test:
+test: node_modules
 	bun test
 
 
