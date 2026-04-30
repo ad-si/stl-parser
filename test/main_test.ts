@@ -10,7 +10,7 @@ const modelsMap = models.reduce((previous, current, index) => {
   return previous
 }, {} as ModelsMap)
 
-describe("STL Parser", () =>
+describe("STL Parser", () => {
   test.todo(
     "Ascii & binary stl have equal faces (maximum delta: 0.00001)",
     (done: () => void) => {
@@ -19,16 +19,17 @@ describe("STL Parser", () =>
         modelsMap["objects/gearwheel"].binaryPath
       )
 
-      return stlParser(asciiStl, { format: "json" }).on(
+      stlParser(asciiStl, { format: "json" }).on(
         "data",
         (asciiData: { faces: any[] }) =>
           stlParser(binaryStl, { format: "json" }).on(
             "data",
             (binaryData: { faces: any[] }) => {
               equalFaces(asciiData.faces, binaryData.faces)
-              return done()
+              done()
             }
           )
       )
     }
-  ))
+  )
+})

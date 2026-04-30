@@ -20,7 +20,7 @@ if (!/^win/.test(String(os.platform))) {
       function (done: (err?: ExecException | string) => void) {
         const filePath = modelsMap["polytopes/cube"].asciiPath
 
-        return childProcess.exec(
+        childProcess.exec(
           `${path.join(__dirname, "../cli/index.ts")} < ${filePath}`,
           function (error, stdout, stderr) {
             if (error) {
@@ -30,7 +30,7 @@ if (!/^win/.test(String(os.platform))) {
               return done(stderr)
             }
             expect(stdout.length).toBe(1476)
-            return done()
+            done()
           }
         )
       }
@@ -41,25 +41,24 @@ if (!/^win/.test(String(os.platform))) {
       (done: (err?: ExecException) => void) => {
         const filePath = modelsMap["objects/bunny"].asciiPath
 
-        return childProcess.exec(
+        childProcess.exec(
           `${path.join(__dirname, "../cli/index.ts")} < ${filePath}`,
-          function (error, stdout, stderr) {
-            //if error then return done error
+          function (_error, _stdout, stderr) {
             if (stderr) {
               return done(new Error(stderr))
             }
-            return done()
+            done()
           }
         )
       }
     )
 
-    return test.todo(
+    test.todo(
       "Parses an binary-stl file-stream",
       (done: (err?: ExecException | string) => void) => {
         const filePath = modelsMap["polytopes/cube"].binaryPath
 
-        return childProcess.exec(
+        childProcess.exec(
           `${path.join(__dirname, "../cli/index.ts")} < ${filePath}`,
           function (error, stdout, stderr) {
             if (error) {
@@ -69,7 +68,7 @@ if (!/^win/.test(String(os.platform))) {
               return done(stderr)
             }
             expect(stdout.length).toBe(1660)
-            return done()
+            done()
           }
         )
       }

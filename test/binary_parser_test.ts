@@ -17,18 +17,18 @@ describe("Binary Parser", () => {
 
     const binaryStreamTester = new StreamTester()
     binaryStreamTester.on("finish", () => done())
-    return binaryStlStream.pipe(stlParser()).pipe(binaryStreamTester)
+    binaryStlStream.pipe(stlParser()).pipe(binaryStreamTester)
   })
 
   test("Returns an array of faces", (done: () => void) => {
     const model = modelsMap["polytopes/tetrahedron"]
     const binaryStl = fs.readFileSync(model.binaryPath)
 
-    return stlParser(binaryStl, { format: "json" }).on(
+    stlParser(binaryStl, { format: "json" }).on(
       "data",
       (polyhedron: Polyhedron) => {
         expectTriangleMesh(polyhedron)
-        return done()
+        done()
       }
     )
   })
@@ -37,29 +37,29 @@ describe("Binary Parser", () => {
     const model = modelsMap["broken/incorrectFaceCounter"]
     const binaryStl = fs.readFileSync(model.binaryPath)
 
-    return stlParser(binaryStl)
+    stlParser(binaryStl)
       .on("warning", (warning: string) =>
         expect(warning).toBe(
           "Number of specified faces (66) " +
             "and counted number of faces (4) do not match"
         )
       )
-      .on("data", (data: any) => done())
+      .on("data", (_data: any) => done())
   })
 
-  return test(//
+  test(//
   'Emit a header with a field "type" set to "binary"', (done: () => void) => {
     const binaryStl = fs.readFileSync(
       modelsMap["polytopes/tetrahedron"].binaryPath
     )
 
-    return stlParser(binaryStl).on(
+    stlParser(binaryStl).on(
       "data",
       function (data: { type: string; faces: Face[] }) {
         if (Array.isArray(data.faces)) {
           expect(data.type).toBe("binary")
         }
-        return done()
+        done()
       }
     )
   })

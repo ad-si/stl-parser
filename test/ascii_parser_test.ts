@@ -19,7 +19,7 @@ describe("Ascii Parser", () => {
 
     const asciiStreamTester = new StreamTester()
     asciiStreamTester.on("finish", () => done())
-    return asciiStlStream.pipe(stlParser()).pipe(asciiStreamTester)
+    asciiStlStream.pipe(stlParser()).pipe(asciiStreamTester)
   })
 
   test("Returns an array of faces", (done: () => void) => {
@@ -27,11 +27,11 @@ describe("Ascii Parser", () => {
       modelsMap["polytopes/tetrahedron"].asciiPath
     )
 
-    return stlParser(asciiStl, { format: "json" }).on(
+    stlParser(asciiStl, { format: "json" }).on(
       "data",
       (polyhedron: Polyhedron) => {
         expectTriangleMesh(polyhedron)
-        return done()
+        done()
       }
     )
   })
@@ -50,7 +50,7 @@ describe("Ascii Parser", () => {
 
     asciiStlStream.pipe(stlParser()).pipe(streamTester)
 
-    return streamTester.on("finish", done)
+    streamTester.on("finish", done)
   })
 
   test("Handles stl-files with a nameless solid", (done: () => void) => {
@@ -72,7 +72,7 @@ describe("Ascii Parser", () => {
 
     asciiStlStream.pipe(parser).pipe(streamTester)
 
-    return streamTester.on("finish", done)
+    streamTester.on("finish", done)
   })
 
   test("Handles stl-files with a missing endsolid keyword", (done: () => void) => {
@@ -90,7 +90,7 @@ describe("Ascii Parser", () => {
 
     asciiStlStream.pipe(parser).pipe(streamTester)
 
-    return streamTester.on("finish", done)
+    streamTester.on("finish", done)
   })
 
   test(//
@@ -115,9 +115,9 @@ describe("Ascii Parser", () => {
 
     asciiStlStream.pipe(parser).pipe(streamTester)
 
-    return streamTester.on("finish", () => {
+    streamTester.on("finish", () => {
       expect(numberOfEvents).toBe(6)
-      return done()
+      done()
     })
   })
 
@@ -141,9 +141,9 @@ normal-(x|y|z) value in face 2, line 9$`
 
     asciiStlStream.pipe(parser).pipe(streamTester)
 
-    return streamTester.on("finish", () => {
+    streamTester.on("finish", () => {
       expect(numberOfEventsX).toBe(6)
-      return done()
+      done()
     })
   })
 
@@ -169,7 +169,7 @@ normal-(x|y|z) value in face 2, line 9$`
 
     asciiStlStream.pipe(parser).pipe(streamTester)
 
-    return streamTester.on("finish", done)
+    streamTester.on("finish", done)
   })
 
   test(`Emits a warning if an ascii-stl can probably be parsed \
@@ -195,7 +195,7 @@ as a binary-stl`, (done: () => void) => {
 
     stlStream.pipe(parser).pipe(streamTester)
 
-    return streamTester.on("finish", done)
+    streamTester.on("finish", done)
   })
 
   test("Gets next word from internal buffer", () => {
@@ -230,26 +230,26 @@ as a binary-stl`, (done: () => void) => {
   test("Fixes faces with 4 or more vertices and emits a warning", (done: () => void) => {
     const asciiStl = fs.readFileSync(modelsMap["broken/fourVertices"].asciiPath)
 
-    return stlParser(asciiStl, { format: "json" })
+    stlParser(asciiStl, { format: "json" })
       .on("warning", (warning: string) =>
         expect(warning).toBe("Face 1 has 4 instead of 3 vertices")
       )
       .on("data", (polyhedron: Polyhedron) => {
         expectTriangleMesh(polyhedron)
-        return done()
+        done()
       })
   })
 
   test("Fixes faces with 2 or less vertices and emits a warning", (done: () => void) => {
     const asciiStl = fs.readFileSync(modelsMap["broken/twoVertices"].asciiPath)
 
-    return stlParser(asciiStl, { format: "json" })
+    stlParser(asciiStl, { format: "json" })
       .on("warning", (warning: string) =>
         expect(warning).toBe("Face 1 has 2 instead of 3 vertices")
       )
       .on("data", (polyhedron: Polyhedron) => {
         expectTriangleMesh(polyhedron)
-        return done()
+        done()
       })
   })
 
@@ -271,7 +271,7 @@ as a binary-stl`, (done: () => void) => {
     const streamTester = new StreamTester()
     streamTester.on("finish", done)
 
-    return asciiStlStream.pipe(parser).pipe(streamTester)
+    asciiStlStream.pipe(parser).pipe(streamTester)
   })
 
   test('Emits a header which contains a field "type" set to "ascii"', (done: () => void) => {
@@ -279,41 +279,32 @@ as a binary-stl`, (done: () => void) => {
       modelsMap["polytopes/tetrahedron"].asciiPath
     )
 
-    return stlParser(asciiStl, { format: "json" }).on(
+    stlParser(asciiStl, { format: "json" }).on(
       "data",
       (asciiData: { type: string }) => {
         expect(asciiData.type).toBe("ascii")
-        return done()
+        done()
       }
     )
   })
 
-  return test.todo(
+  test.todo(
     "Can pipe large files into a file write-streamxxx",
     (done: () => void) => {
       const __dirname = path.dirname(new URL(import.meta.url).pathname)
       const outFilePath = path.resolve(__dirname, "temp.jsonl")
 
-      // console.log(outFilePath)
-
       const fileWriteStream = fs.createWriteStream(outFilePath)
-      fileWriteStream.on("end", () => {
-        // console.log("end")
-      })
+      fileWriteStream.on("end", () => {})
       fileWriteStream.on("finish", () => {
-        // console.log("done")
         fs.unlinkSync(outFilePath)
-        return done()
+        done()
       })
 
-      return (
-        fs
-          // .createReadStream(modelsMap["objects/bunny"].asciiPath)
-          .createReadStream(modelsMap["polytopes/tetrahedron"].asciiPath)
-          .pipe(stlParser({ readableObjectMode: false, format: "jsonl" }))
-          .pipe(fileWriteStream)
-      )
+      fs.createReadStream(modelsMap["polytopes/tetrahedron"].asciiPath)
+        .pipe(stlParser({ readableObjectMode: false, format: "jsonl" }))
+        .pipe(fileWriteStream)
     },
     50000
-  ) // 20 seconds timeout
+  )
 })
