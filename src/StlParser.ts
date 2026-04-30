@@ -22,7 +22,7 @@ export default class StlParser extends stream.Transform {
     super(options)
     this.options = options
     this.firstCall = true
-    this.parser = new AsciiParser(this.options)
+    this.parser = new AsciiParser({ ...this.options, readableObjectMode: true })
   }
 
   _flush(done: () => void) {
@@ -53,7 +53,10 @@ export default class StlParser extends stream.Transform {
         }
       } //
       else {
-        this.parser = new BinaryParser(clone(this.options))
+        this.parser = new BinaryParser({
+          ...clone(this.options),
+          readableObjectMode: true,
+        })
         if (this.options.format === "jsonl") {
           this.push(
             this.options.readableObjectMode

@@ -9,7 +9,9 @@ node_modules: package.json bun.lock
 
 .PHONY: build
 build: node_modules
+	rm -rf build
 	bunx tsc
+	chmod +x build/cli/index.js
 
 
 .PHONY: test

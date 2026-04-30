@@ -147,6 +147,7 @@ export default class AsciiParser extends Transform {
           this.currentFace.vertices = []
         }
 
+        this.currentVertex = { x: null, y: null, z: null }
         this.currentFace?.vertices.push(this.currentVertex)
       } else {
         this.emit(
